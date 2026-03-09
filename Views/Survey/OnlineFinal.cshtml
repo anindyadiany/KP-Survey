@@ -1,0 +1,34 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Layanan IT - Final</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+    <div class="survey-container">
+        <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill progress-fill-final"></div>
+        </div>
+
+        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+
+        <div class="question-group">
+            <p class="question-text">Perbaikan apa yang Anda sarankan untuk meningkatkan layanan</p>
+            <textarea class="feedback-input" rows="4" placeholder="Ketik Disini......." aria-label="Saran perbaikan layanan"></textarea>
+        </div>
+
+        <div class="nav-actions">
+            <a class="btn-outline" href="/Survey/OnlineTechnician">Kembali</a>
+            <button class="btn-submit" type="button">Kirim</button>
+        </div>
+    </div>
+
+</body>
+</html>

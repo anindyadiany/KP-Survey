@@ -1,0 +1,76 @@
+@{
+    // We set Layout to null to ensure your custom CSS and background are the only things rendering.
+    Layout = null; 
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Layanan IT</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+    <div class="survey-container">
+        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+
+        <div class="question-group">
+            <p class="question-text">Layanan IT mana yang terakhir Anda gunakan?</p>
+            <select class="styled-select">
+                <option selected disabled>Pilih salah satu</option>
+                <option>Internet / Wi-Fi</option>
+                <option>Email Institusi</option>
+                <option>Software Licensing</option>
+            </select>
+        </div>
+
+        <div class="question-group">
+            <p class="question-text">Secara keseluruhan, seberapa puas Anda dengan layanan IT yang diberikan?</p>
+            <div class="rating-scale">
+                <span class="scale-label">Sangat tidak puas</span>
+                <div class="rating-number" onclick="highlight(this)">1</div>
+                <div class="rating-number" onclick="highlight(this)">2</div>
+                <div class="rating-number" onclick="highlight(this)">3</div>
+                <div class="rating-number" onclick="highlight(this)">4</div>
+                <div class="rating-number" onclick="highlight(this)">5</div>
+                <span class="scale-label">Sangat puas</span>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="question-group">
+            <p class="question-text">Siapa teknisi yang membantu Anda?</p>
+            <select class="styled-select">
+                <option selected disabled>Pilih salah satu</option>
+                <option>Budi Santoso</option>
+                <option>Siti Aminah</option>
+                <option>Andi Wijaya</option>
+            </select>
+        </div>
+
+        <div class="question-group">
+            <p class="question-text">Seberapa besar kemungkinan Anda merekomendasikan teknisi tersebut?</p>
+            <div class="rating-scale rating-scale-compact">
+                <span class="scale-label">Sangat tidak mungkin</span>
+                @for (int i = 1; i <= 10; i++) {
+                    <div class="rating-number rating-number-compact" onclick="highlight(this)">@i</div>
+                }
+                <span class="scale-label">Sangat mungkin</span>
+            </div>
+        </div>
+
+        <button class="btn-submit">Kirim</button>
+    </div>
+
+    <script>
+        function highlight(el) {
+            const siblings = el.parentElement.querySelectorAll('.rating-number');
+            siblings.forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    </script>
+</body>
+</html>
