@@ -31,8 +31,12 @@ body {
   background-attachment: fixed;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
   margin: 0;
 }
 
@@ -48,6 +52,9 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-sizing: border-box;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* --- 4. TEXT STYLES (Refined Spacing) --- */
@@ -113,6 +120,10 @@ body {
 
 .progress-fill-final {
   width: 75%;
+}
+
+.progress-fill-complete {
+  width: 100%;
 }
 
 /* --- 5. INTERACTIVE INPUTS --- */
@@ -217,6 +228,38 @@ body {
   max-width: 1120px;
 }
 
+body.page-top {
+  align-items: flex-start;
+}
+
+body.page-center {
+  align-items: center;
+}
+
+.thankyou-container {
+  text-align: center;
+  max-width: 980px;
+}
+
+.thankyou-title {
+  margin-bottom: 12px;
+}
+
+.thankyou-illustration {
+  width: min(360px, 80%);
+  height: auto;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.thankyou-text {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #2f2f2f;
+}
+
 .survey-caption {
   margin: -4px auto 16px;
   text-align: center;
@@ -270,7 +313,7 @@ body {
   justify-content: start;
   column-gap: 8px;
   row-gap: 6px;
-  padding: 10px;
+  padding: 10px 30px 10px 10px;
   border-color: var(--primary-blue);
   box-shadow:
     0 0 0 2px rgba(42, 64, 142, 0.18),
@@ -384,12 +427,13 @@ body {
 @media (max-width: 768px) {
   body {
     align-items: flex-start;
-    padding: 22px 0;
+    padding: 14px;
   }
 
   .survey-container {
-    width: 94%;
+    width: 100%;
     border-radius: 20px;
+    max-height: calc(100vh - 28px);
   }
 
   .question-text {
@@ -461,5 +505,13 @@ body {
 
   .feedback-input {
     max-width: 100%;
+  }
+
+  .thankyou-illustration {
+    width: min(280px, 90%);
+  }
+
+  .thankyou-text {
+    font-size: 16px;
   }
 }

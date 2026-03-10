@@ -33,5 +33,15 @@ namespace SurveyApp.Controllers
         {
             return View();
         }
+
+        public IActionResult OnlineThankYou()
+        {
+            return View();
+        }
+
+        public IActionResult WalkinThankYou()
+        {
+            return View();
+        }
     }
 }
