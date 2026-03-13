@@ -1,0 +1,9 @@
+@model dynamic
+<div class="rating-scale rating-scale-compact">
+    <span class="scale-label">Sangat tidak mungkin</span>
+    @for (int i = 1; i <= 10; i++) {
+        <div class="rating-number rating-number-compact" onclick="setRating('q_@Model.id', @i, this)">@i</div>
+    }
+    <span class="scale-label">Sangat mungkin</span>
+</div>
+<input type="hidden" name="ratings[@Model.id]" id="q_@Model.id" required />

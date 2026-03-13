@@ -1,17 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using SurveyApp.Data; // Ensure this matches your namespace
+using SurveyApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

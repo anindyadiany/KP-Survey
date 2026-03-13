@@ -1,7 +1,5 @@
-@{
-    // We set Layout to null to ensure your custom CSS and background are the only things rendering.
-    Layout = null; 
-}
+@model SurveyApp.Models.QuestionResponse
+@{ Layout = null; }
 
 <!DOCTYPE html>
 <html lang="id">
@@ -12,64 +10,123 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="page-center">
-
     <div class="survey-container">
         <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
 
-        <div class="question-group">
-            <p class="question-text">Layanan IT mana yang terakhir Anda gunakan?</p>
-            <select class="styled-select">
-                <option selected disabled>Pilih salah satu</option>
-                <option>Internet / Wi-Fi</option>
-                <option>Email Institusi</option>
-                <option>Software Licensing</option>
-            </select>
-        </div>
+        @if (TempData["FormError"] != null)
+        {
+            <div class="validation-error">@TempData["FormError"]</div>
+        }
 
-        <div class="question-group">
-            <p class="question-text">Secara keseluruhan, seberapa puas Anda dengan layanan IT yang diberikan?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
+        <form id="walkinForm" asp-action="SubmitWalkin" method="post" novalidate>
+            <div id="formError" class="validation-error" style="display:none;"></div>
+            
+            @foreach (var q in ViewBag.Questions)
+            {
+                <div class="question-group">
+                    <p class="question-text">@q.question_body</p>
 
-        <hr class="divider">
+                    @if (q.input_type == "selection")
+                    {
+                        @if (q.id == 10) // Layanan Select
+                        {
+                            <select name="serviceId" id="serviceSelect" class="styled-select" required>
+                                <option selected disabled>Pilih salah satu</option>
+                                @foreach (var service in ViewBag.Services) {
+                                    <option value="@service.id">@service.name</option>
+                                }
+                            </select>
+                        }
+                        else if (q.id == 12) // Teknisi Select
+                        {
+                            <select name="technicianId" id="technicianSelect" class="styled-select" required disabled>
+                                <option selected disabled>Pilih layanan terlebih dahulu</option>
+                            </select>
+                        }
+                    }
+                    else if (q.input_type == "likert_5")
+                    {
+                        <partial name="_LikertRating" model="q" />
+                    }
+                    else if (q.input_type == "nps_10")
+                    {
+                        <partial name="_NPSRating" model="q" />
+                    }
+                </div>
+            }
 
-        <div class="question-group">
-            <p class="question-text">Siapa teknisi yang membantu Anda?</p>
-            <select class="styled-select">
-                <option selected disabled>Pilih salah satu</option>
-                <option>Budi Santoso</option>
-                <option>Siti Aminah</option>
-                <option>Andi Wijaya</option>
-            </select>
-        </div>
-
-        <div class="question-group">
-            <p class="question-text">Seberapa besar kemungkinan Anda merekomendasikan teknisi tersebut?</p>
-            <div class="rating-scale rating-scale-compact">
-                <span class="scale-label">Sangat tidak mungkin</span>
-                @for (int i = 1; i <= 10; i++) {
-                    <div class="rating-number rating-number-compact" onclick="highlight(this)">@i</div>
-                }
-                <span class="scale-label">Sangat mungkin</span>
-            </div>
-        </div>
-
-        <a class="btn-submit" href="/Survey/WalkinThankYou">Kirim</a>
+            <button type="submit" class="btn-submit">Kirim</button>
+        </form>
     </div>
 
     <script>
-        function highlight(el) {
+        function setRating(inputId, value, el) {
+            document.getElementById(inputId).value = value;
             const siblings = el.parentElement.querySelectorAll('.rating-number');
             siblings.forEach(s => s.classList.remove('selected'));
             el.classList.add('selected');
+        }
+
+        const form = document.getElementById('walkinForm');
+        const formError = document.getElementById('formError');
+        const serviceSelect = document.getElementById('serviceSelect');
+        const technicianSelect = document.getElementById('technicianSelect');
+
+        if (serviceSelect && technicianSelect) {
+            serviceSelect.addEventListener('change', function () {
+                const serviceId = this.value;
+
+                technicianSelect.disabled = false;
+                technicianSelect.innerHTML = '<option selected disabled>Memuat teknisi...</option>';
+
+                fetch(`/Survey/GetTechniciansByService?serviceId=${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        technicianSelect.innerHTML = '<option selected disabled>Pilih salah satu</option>';
+                        data.forEach(tech => {
+                            const option = document.createElement('option');
+                            option.value = tech.id;
+                            option.textContent = tech.name;
+                            technicianSelect.appendChild(option);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error fetching technicians:', err);
+                        technicianSelect.innerHTML = '<option selected disabled>Gagal memuat teknisi</option>';
+                    });
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const missing = [];
+
+                if (serviceSelect && !serviceSelect.value) {
+                    missing.push('Layanan IT');
+                }
+
+                if (technicianSelect && !technicianSelect.value) {
+                    missing.push('Teknisi');
+                }
+
+                const ratingInputs = form.querySelectorAll('input[type="hidden"][name^="ratings["]');
+                ratingInputs.forEach(input => {
+                    if (!input.value) {
+                        missing.push('Semua penilaian pertanyaan');
+                    }
+                });
+
+                if (missing.length > 0) {
+                    e.preventDefault();
+                    formError.style.display = 'block';
+                    formError.textContent = 'Harap lengkapi semua field wajib sebelum kirim.';
+                    formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                formError.style.display = 'none';
+                formError.textContent = '';
+            });
         }
     </script>
 </body>

@@ -197,6 +197,19 @@ body {
   text-align: center;
 }
 
+.validation-error {
+  max-width: 640px;
+  margin: 0 auto 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9534f;
+  background: rgba(217, 83, 79, 0.12);
+  color: #7f1d1d;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .nav-actions {
   margin-top: 24px;
   display: flex;
