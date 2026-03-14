@@ -1,5 +1,8 @@
+@model SurveyApp.Models.QuestionResponse
 @{
     Layout = null;
+    var allQuestions = (IEnumerable<SurveyApp.Models.Question>)ViewBag.Questions;
+    var technicians = ViewBag.Technicians as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
 
 <!DOCTYPE html>
@@ -10,89 +13,233 @@
     <title>Survey Layanan IT - Online</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="page-top">
 
-    <div class="survey-container">
-        <div class="progress-track" aria-hidden="true">
-            <div class="progress-fill progress-fill-start"></div>
-        </div>
-
-        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
-
-        <div class="question-group">
-            <p class="question-text">Secara keseluruhan, seberapa puas Anda dengan layanan IT yang diberikan?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
-
-        <div class="question-group">
-            <p class="question-text">Seberapa puas Anda dengan penyelesaian masalah TI Anda?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
-
-        <div class="question-group">
-            <p class="question-text">Seberapa puas Anda dengan profesionalisme staf TI?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
-
-        <div class="question-group">
-            <p class="question-text">Seberapa puas Anda dengan kejelasan komunikasi selama proses dukungan berlangsung?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
-
-        <div class="question-group">
-            <p class="question-text">Secara keseluruhan, seberapa puas Anda dengan layanan TI yang diberikan?</p>
-            <div class="rating-scale">
-                <span class="scale-label">Sangat tidak puas</span>
-                <div class="rating-number" onclick="highlight(this)">1</div>
-                <div class="rating-number" onclick="highlight(this)">2</div>
-                <div class="rating-number" onclick="highlight(this)">3</div>
-                <div class="rating-number" onclick="highlight(this)">4</div>
-                <div class="rating-number" onclick="highlight(this)">5</div>
-                <span class="scale-label">Sangat puas</span>
-            </div>
-        </div>
-
-        <a class="btn-submit" href="/Survey/OnlineNext">Berikutnya</a>
+<div class="survey-container" id="mainContainer">
+    <div class="progress-track" aria-hidden="true">
+        <div id="progressFill" class="progress-fill progress-fill-start"></div>
     </div>
+    <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+    
+    <div id="stepError" class="validation-error" style="display:none;"></div>
 
-    <script>
-        function highlight(el) {
-            const siblings = el.parentElement.querySelectorAll('.rating-number');
-            siblings.forEach(s => s.classList.remove('selected'));
-            el.classList.add('selected');
+    <form asp-action="SubmitOnline" method="post" id="surveyForm">
+        
+        <div class="step" id="step1">
+            @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 1))
+            {
+                <div class="question-group">
+                    <p class="question-text">@q.question_body</p>
+                    <partial name="_LikertRating" model="q" />
+                </div>
+            }
+            <div class="nav-actions">
+                <button type="button" class="btn-submit" onclick="validateAndNext(2)">Berikutnya</button>
+            </div>
+        </div>
+
+        <div class="step" id="step2" style="display:none;">
+            @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 2))
+            {
+                <div class="question-group">
+                    <p class="question-text">@q.question_body</p>
+                    <partial name="_LikertRating" model="q" />
+                </div>
+            }
+            <div class="nav-actions">
+                <button type="button" class="btn-outline" onclick="goToStep(1)">Kembali</button>
+                <button type="button" class="btn-submit" onclick="validateAndNext(3)">Berikutnya</button>
+            </div>
+        </div>
+
+        <div class="step" id="step3" style="display:none;">
+            <p class="survey-caption">
+                Pilih <strong>minimal 1</strong> teknisi yang melayani Anda (boleh lebih dari satu).<br>
+                Berikan penilaian 1-10 untuk masing-masing teknisi, dengan:<br>
+                <strong>1 = sangat tidak mungkin merekomendasikan</strong><br>
+                <strong>10 = sangat mungkin merekomendasikan</strong>
+            </p>
+            
+            <div class="tech-grid">
+                @foreach (var tech in technicians)
+                {
+                    <partial name="_TechCard" model="tech" />
+                }
+            </div>
+
+            <div class="nav-actions">
+                <button type="button" class="btn-outline" onclick="goToStep(2)">Kembali</button>
+                <button type="button" class="btn-submit" onclick="validateAndNext(4)">Berikutnya</button>
+            </div>
+        </div>
+
+        <div class="step" id="step4" style="display:none;">
+            @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 4))
+            {
+                <div class="question-group">
+                    <p class="question-text">@q.question_body</p>
+                    <textarea name="ratings[@q.id]" class="feedback-input" rows="4" placeholder="Ketik Disini......."></textarea>
+                </div>
+            }
+            <div class="nav-actions">
+                <button type="button" class="btn-outline" onclick="goToStep(3)">Kembali</button>
+                <button type="submit" class="btn-submit">Kirim Survey</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('surveyForm');
+    const stepError = document.getElementById('stepError');
+
+    // Initialize NPS buttons for Step 3
+    document.querySelectorAll('.tech-nps').forEach(container => {
+        const techId = container.dataset.techid;
+        for (let i = 1; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'nps-btn';
+            btn.textContent = i;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                selectNps(btn, techId, i);
+            };
+            container.appendChild(btn);
         }
-    </script>
+    });
+
+    function showStepError(message) {
+        stepError.textContent = message;
+        stepError.style.display = 'block';
+    }
+
+    function clearStepError() {
+        stepError.textContent = '';
+        stepError.style.display = 'none';
+    }
+
+    function getCurrentStepNumber() {
+        const activeStep = Array.from(document.querySelectorAll('.step')).find(step => step.style.display !== 'none');
+        return activeStep ? Number(activeStep.id.replace('step', '')) : 1;
+    }
+
+    function validateCurrentStep() {
+        const currentStep = getCurrentStepNumber();
+
+        if (currentStep === 1 || currentStep === 2) {
+            const missingRating = document.querySelector(`#step${currentStep} input[type="hidden"][name^="ratings["]`)
+                && Array.from(document.querySelectorAll(`#step${currentStep} input[type="hidden"][name^="ratings["]`))
+                    .some(input => !input.value);
+
+            if (missingRating) {
+                showStepError('Harap isi semua penilaian sebelum lanjut.');
+                return false;
+            }
+        }
+
+        if (currentStep === 3) {
+            const techInputs = Array.from(document.querySelectorAll('#step3 input[name^="techRatings["]'));
+            const selectedRatings = techInputs.filter(input => input.value);
+
+            if (selectedRatings.length === 0) {
+                showStepError('Pilih minimal satu teknisi dan beri nilai sebelum lanjut.');
+                return false;
+            }
+
+            const selectedCardsWithoutRating = Array.from(document.querySelectorAll('#step3 .tech-card.selected'))
+                .some(card => {
+                    const hiddenInput = card.querySelector('input[name^="techRatings["]');
+                    return hiddenInput && !hiddenInput.value;
+                });
+
+            if (selectedCardsWithoutRating) {
+                showStepError('Setiap teknisi yang dipilih harus diberi nilai.');
+                return false;
+            }
+        }
+
+        if (currentStep === 4) {
+            const hasEmptyText = Array.from(document.querySelectorAll('#step4 textarea[name^="ratings["]'))
+                .some(textarea => !textarea.value.trim());
+
+            if (hasEmptyText) {
+                showStepError('Harap isi semua saran atau masukan sebelum kirim.');
+                return false;
+            }
+        }
+
+        clearStepError();
+        return true;
+    }
+
+    function goToStep(stepNumber) {
+        clearStepError();
+        document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
+        document.getElementById('step' + stepNumber).style.display = 'block';
+
+        const progressFill = document.getElementById('progressFill');
+        progressFill.classList.remove('progress-fill-start', 'progress-fill-mid', 'progress-fill-late', 'progress-fill-final');
+        if (stepNumber === 1) progressFill.classList.add('progress-fill-start');
+        if (stepNumber === 2) progressFill.classList.add('progress-fill-mid');
+        if (stepNumber === 3) progressFill.classList.add('progress-fill-late');
+        if (stepNumber === 4) progressFill.classList.add('progress-fill-final');
+        
+        // Make container wide only for the tech grid step
+        const container = document.getElementById('mainContainer');
+        if(stepNumber === 3) container.classList.add('survey-container-wide');
+        else container.classList.remove('survey-container-wide');
+
+        window.scrollTo(0, 0);
+    }
+
+    function validateAndNext(stepNumber) {
+        if (validateCurrentStep()) {
+            goToStep(stepNumber);
+        }
+    }
+
+    function toggleTech(el) {
+        el.classList.toggle('selected');
+    }
+
+    function cardKeydown(event, el) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleTech(el);
+        }
+    }
+
+    function selectNps(btn, techId, value) {
+        const card = document.getElementById('tech_card_' + techId);
+        card.classList.add('selected');
+        
+        // Highlight button
+        card.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        // Set hidden input value
+        document.getElementById('input_tech_' + techId).value = value;
+        clearStepError();
+    }
+
+    function setRating(inputId, value, el) {
+        document.getElementById(inputId).value = value;
+        const siblings = el.parentElement.querySelectorAll('.rating-number');
+        siblings.forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        clearStepError();
+    }
+
+    form.addEventListener('submit', function (event) {
+        if (!validateCurrentStep()) {
+            event.preventDefault();
+        }
+    });
+
+    document.querySelectorAll('#step4 textarea[name^="ratings["]').forEach(textarea => {
+        textarea.addEventListener('input', clearStepError);
+    });
+</script>
 </body>
 </html>

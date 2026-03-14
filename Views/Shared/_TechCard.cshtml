@@ -1,0 +1,35 @@
+@model dynamic
+
+@{
+    // Generate initials as a fallback
+    var names = Model.name.Split(' ');
+    string initials = names.Length > 1 
+        ? (names[0][0].ToString() + names[1][0].ToString()).ToUpper() 
+        : names[0][0].ToString().ToUpper();
+}
+
+<article class="tech-card" role="button" tabindex="0" 
+         id="tech_card_@Model.id"
+         onclick="toggleTech(this)" 
+         onkeydown="cardKeydown(event, this)">
+    
+    <div class="tech-avatar">
+        @if (!string.IsNullOrEmpty(Model.photo_path))
+        {
+            @* Render the image if the path exists *@
+            <img src="@Model.photo_path" alt="@Model.name" class="tech-img" />
+        }
+        else
+        {
+            @* Fallback to initials if no photo *@
+            <span>@initials</span>
+        }
+    </div>
+
+    <span class="tech-name">@Model.name</span>
+    
+    <div class="tech-nps" aria-hidden="true" data-techid="@Model.id"></div>
+    
+    @* Hidden input for the controller *@
+    <input type="hidden" name="techRatings[@Model.id]" id="input_tech_@Model.id" value="" />
+</article>
