@@ -24,6 +24,7 @@
     <div id="stepError" class="validation-error" style="display:none;"></div>
 
     <form asp-action="SubmitOnline" method="post" id="surveyForm">
+        <input type="hidden" name="submissionId" value="@ViewBag.SubmissionId" />
         
         <div class="step" id="step1">
             @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 1))
