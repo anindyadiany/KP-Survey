@@ -12,7 +12,7 @@ using SurveyApp.Data;
 namespace SurveyApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260313135833_InitialCreate")]
+    [Migration("20260324083549_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

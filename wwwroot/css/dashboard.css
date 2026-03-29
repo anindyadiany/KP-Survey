@@ -1,4 +1,123 @@
 
+/* --- 1. GLOBAL RESET & FONTS --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+@font-face {
+  font-family: "Cedora";
+  src: url("../assets/cedora/Cedora-RegularStd.otf") format("opentype");
+}
+
+/* --- 2. THE BACKGROUND (Essential for Glass Effect) --- */
+.dashboard-body {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-image: url("../assets/PertaminaBG.png") !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+/* --- 3. THE SOLID WHITE SIDEBAR --- */
+.sidebar-container {
+    width: 320px; 
+    flex-shrink: 0;
+    height: 100vh;
+    background-color: #ffffff !important; /* Opaque white */
+    box-shadow: 5px 0 23.6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 30px 30px 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 24px;
+    z-index: 100;
+}
+
+.nav-item {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #4D4D4D;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.nav-item.active {
+    background-color: #2a408e; /* Pertamina Blue */
+    color: white !important;
+}
+
+/* --- 4. THE GLASS CARDS (Fixed logic) --- */
+.dashboard-main {
+    flex: 1;
+    padding: 40px 60px;
+    background: transparent !important; /* Must be transparent! */
+    overflow-y: auto;
+}
+
+.dashboard-card {
+    /* Glass Effect */
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border-radius: 30px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    padding: 30px !important;
+    margin-bottom: 24px;
+}
+/* Ensure the page starts at the absolute top */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* --- 1. DASHBOARD LAYOUT FIX --- */
+.dashboard-body {
+    display: flex;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    /* Background must be here for the glass blur to work */
+    background-image: url("../assets/PertaminaBG.png") !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden; 
+    align-items: stretch;
+}
+
+.dashboard-main {
+    flex: 1;
+    padding: 40px 60px;
+    margin: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+    /* MUST be transparent to show the background image */
+    background: transparent !important; 
+}
+
+/* --- 2. THE GLASS CARDS (Based on your reference) --- */
+.dashboard-card {
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border-radius: 30px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    
+    padding: 30px !important;
+    text-align: left;
+    box-sizing: border-box;
+}
 /* --- 1. FONTS & RESET --- */
 @font-face {
   font-family: "Cedora";
@@ -534,4 +653,87 @@ body.page-center {
   .thankyou-text {
     font-size: 16px;
   }
+}
+
+// dashboard
+
+/* --- FULL DASHBOARD RESET --- */
+.dashboard-body {
+    display: flex;
+    margin: 0 !important; /* Removes top gap */
+    padding: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f4f7fe;
+    overflow: hidden; 
+    align-items: stretch; /* Forces both sidebar and main to start at the top */
+}
+
+.sidebar-container {
+    width: 320px; 
+    flex-shrink: 0;
+    height: 100vh;
+    background-color: #ffffff !important; /* Solid white */
+    box-shadow: 5px 0 23.6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 30px 30px 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 24px;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+/* Adjust wrapper to be flush with top */
+.sidebar-logo-wrapper {
+    width: 100%;
+    height: 100px; /* Reduced height to pull navigation up */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px; 
+}
+
+/* Main content padding reset */
+.dashboard-main {
+    flex: 1;
+    padding: 40px 60px;
+    margin: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.sidebar-logo {
+    width: 140px; 
+    height: auto;
+}
+
+.nav-item {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #4D4D4D;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nav-item.active {
+    background-color: #2a408e; /* Pertamina Blue */
+    color: white !important;
+}
+
+.nav-item i {
+    margin-right: 12px;
+    font-size: 24px;
+}
+
+/* Dashboard Content Cards */
+.dashboard-card {
+    background: white !important;
+    padding: 30px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
 }

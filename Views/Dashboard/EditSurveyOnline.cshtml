@@ -1,0 +1,23 @@
+@model IEnumerable<SurveyApp.Models.Question>
+@{
+    Layout = null; // Keep this 'null' if you don't want to use _Layout.cshtml [cite: 3]
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Edit Survey - Online</title>
+</head>
+<body class="dashboard-body" style="display: flex;"> @* Add 'display: flex' here [cite: 3] *@
+
+    @* Call the partial exactly where you did in Index *@
+    <partial name="_Tabs" /> 
+
+    <main class="dashboard-main" style="flex: 1; padding: 20px;">
+        @* Your Survey Content *@
+    </main>
+</body>
+</html>
