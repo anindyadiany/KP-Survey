@@ -24,6 +24,7 @@
     <div id="stepError" class="validation-error" style="display:none;"></div>
 
     <form asp-action="SubmitOnline" method="post" id="surveyForm">
+        <input type="hidden" name="submissionId" value="@ViewBag.SubmissionId" />
         
         <!-- Step 1: Category 1 -->
         <div class="step" id="step1">

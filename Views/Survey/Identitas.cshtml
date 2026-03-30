@@ -1,0 +1,102 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identitas Responden - Survey IT</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="page-center">
+
+    <div class="survey-container">
+        @* <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill progress-fill-start"></div>
+        </div> *@
+
+        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+
+        @if (TempData["FormError"] != null)
+        {
+            <div class="validation-error">@TempData["FormError"]</div>
+        }
+
+        <form id="identitasForm" asp-action="StartSurvey" method="post" novalidate>
+            <input type="hidden" name="returnTo" value="@ViewBag.ReturnTo" />
+            <div id="formError" class="validation-error" style="display:none;"></div>
+            
+            <div class="question-group">
+                <p class="question-text">Nama</p>
+                <input id="respondentName" type="text" name="respondent_name" class="feedback-input" 
+                       placeholder="Masukkan nama anda" required style="margin-bottom: 20px;" />
+            </div>
+
+            <div class="question-group">
+                <p class="question-text">Email</p>
+                <input id="respondentEmail" type="email" name="respondent_email" class="feedback-input" 
+                       placeholder="Masukkan alamat email anda" required style="margin-bottom: 20px;" />
+            </div>
+
+            <div class="question-group">
+                <p class="question-text">Fungsi</p>
+                <select id="respondentFunction" name="respondent_function" class="styled-select" required>
+                    <option value="" disabled selected>Pilih salah satu</option>
+                    <option value="Staff">Staff</option>
+                    <option value="Mahasiswa">Mahasiswa</option>
+                    <option value="Dosen">Dosen</option>
+                    <option value="Umum">Umum</option>
+                </select>
+            </div>
+
+            <div class="nav-actions">
+                <button type="submit" class="btn-submit">Selanjutnya</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const identitasForm = document.getElementById('identitasForm');
+        const formError = document.getElementById('formError');
+        const respondentName = document.getElementById('respondentName');
+        const respondentEmail = document.getElementById('respondentEmail');
+        const respondentFunction = document.getElementById('respondentFunction');
+
+        function showFormError(message) {
+            formError.textContent = message;
+            formError.style.display = 'block';
+            formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function clearFormError() {
+            formError.textContent = '';
+            formError.style.display = 'none';
+        }
+
+        if (identitasForm) {
+            identitasForm.addEventListener('submit', function (event) {
+                const nameValue = respondentName?.value.trim() ?? '';
+                const emailValue = respondentEmail?.value.trim() ?? '';
+                const functionValue = respondentFunction?.value ?? '';
+
+                if (!nameValue || !emailValue || !functionValue) {
+                    event.preventDefault();
+                    showFormError('Harap lengkapi semua pertanyaan sebelum lanjut.');
+                    return;
+                }
+
+                clearFormError();
+            });
+
+            [respondentName, respondentEmail, respondentFunction].forEach(el => {
+                if (!el) return;
+                el.addEventListener('input', clearFormError);
+                el.addEventListener('change', clearFormError);
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -13,11 +13,67 @@ namespace SurveyApp.Controllers
             _context = context;
         }
 
-        // GET: Survey/Walkin
-        public async Task<IActionResult> Walkin()
+        // GET: Survey/Identitas
+        public IActionResult Identitas(string? returnTo)
         {
+            var normalizedReturnTo = (returnTo ?? string.Empty).Trim().ToLowerInvariant();
+            ViewBag.ReturnTo = normalizedReturnTo == "walkin" ? "walkin" : "online";
+            return View();
+        }
+
+        // POST: Survey/StartSurvey
+        [HttpPost]
+        public async Task<IActionResult> StartSurvey(string respondent_name, string respondent_email, string respondent_function, string returnTo)
+        {
+            if (string.IsNullOrWhiteSpace(respondent_name) ||
+                string.IsNullOrWhiteSpace(respondent_email) ||
+                string.IsNullOrWhiteSpace(respondent_function))
+            {
+                TempData["FormError"] = "Harap lengkapi semua pertanyaan sebelum lanjut.";
+                return RedirectToAction("Identitas", new { returnTo });
+            }
+
+            var normalizedReturnTo = (returnTo ?? string.Empty).Trim().ToLowerInvariant();
+            if (normalizedReturnTo != "walkin" && normalizedReturnTo != "online")
+            {
+                TempData["FormError"] = "Tujuan survey tidak valid.";
+                return RedirectToAction("Identitas");
+            }
+
+            var selectedSurveyTypeId = normalizedReturnTo == "walkin" ? 1 : 2;
+
+            // Create the submission record early to store the identity
+            var submission = new SurveySubmission
+            {
+                respondent_name = respondent_name,
+                respondent_email = respondent_email,
+                respondent_function = respondent_function,
+                survey_types_id = selectedSurveyTypeId,
+                submitted_at = DateTime.Now
+            };
+
+            _context.SurveySubmissions.Add(submission);
+            await _context.SaveChangesAsync();
+
+            // Pass the submission ID to selected survey page
+            return selectedSurveyTypeId == 1
+                ? RedirectToAction("Walkin", new { submissionId = submission.id })
+                : RedirectToAction("Online", new { submissionId = submission.id });
+        }
+
+        // GET: Survey/Walkin
+        public async Task<IActionResult> Walkin(int? submissionId)
+        {
+            if (!submissionId.HasValue ||
+                !await _context.SurveySubmissions.AnyAsync(s => s.id == submissionId.Value && s.survey_types_id == 1))
+            {
+                TempData["FormError"] = "Isi data identitas terlebih dahulu untuk memulai survey Walk-in.";
+                return RedirectToAction("Identitas", new { returnTo = "walkin" });
+            }
+
             ViewBag.Services = await _context.Services.ToListAsync();
             ViewBag.Technicians = await _context.Technicians.ToListAsync();
+            ViewBag.SubmissionId = submissionId.Value;
             
             // Fetch only active questions for Walk-in (Survey Type ID 1)
             ViewBag.Questions = await _context.Questions
@@ -41,17 +97,22 @@ namespace SurveyApp.Controllers
 
         // POST: Survey/SubmitWalkin
         [HttpPost]
-        public async Task<IActionResult> SubmitWalkin(int serviceId, int technicianId, Dictionary<int, int> ratings)
+        public async Task<IActionResult> SubmitWalkin(int submissionId, int serviceId, int technicianId, Dictionary<int, int> ratings)
         {
-            if (serviceId <= 0 || technicianId <= 0 || ratings == null || ratings.Count == 0 || ratings.Any(r => r.Value <= 0))
+            var submission = await _context.SurveySubmissions
+                .FirstOrDefaultAsync(s => s.id == submissionId && s.survey_types_id == 1);
+
+            if (submission == null)
             {
-                TempData["FormError"] = "Harap lengkapi semua field wajib sebelum kirim.";
-                return RedirectToAction("Walkin");
+                TempData["FormError"] = "Isi data identitas terlebih dahulu untuk memulai survey Walk-in.";
+                return RedirectToAction("Identitas", new { returnTo = "walkin" });
             }
 
-            var submission = new SurveySubmission { survey_types_id = 1, submitted_at = DateTime.Now };
-            _context.SurveySubmissions.Add(submission);
-            await _context.SaveChangesAsync();
+            if (serviceId <= 0 || technicianId <= 0 || ratings == null || ratings.Count == 0 || ratings.Any(r => r.Value <= 0))
+            {
+                TempData["FormError"] = "Harap lengkapi semua pertanyaan sebelum kirim.";
+                return RedirectToAction("Walkin", new { submissionId });
+            }
 
             var questionIds = ratings.Keys.ToList();
                 var questions = await _context.Questions
@@ -86,8 +147,15 @@ namespace SurveyApp.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Online()
+        public async Task<IActionResult> Online(int? submissionId)
         {
+            if (!submissionId.HasValue ||
+                !await _context.SurveySubmissions.AnyAsync(s => s.id == submissionId.Value && s.survey_types_id == 2))
+            {
+                TempData["FormError"] = "Isi data identitas terlebih dahulu untuk memulai survey Online.";
+                return RedirectToAction("Identitas", new { returnTo = "online" });
+            }
+
             // Fetch all questions for the Online Survey (Type 2)
             var questions = await _context.Questions
                 .Where(q => q.is_active && q.survey_types_id == 2)
@@ -98,24 +166,25 @@ namespace SurveyApp.Controllers
             // Send the list to the View
             ViewBag.Questions = questions;
             ViewBag.Technicians = await _context.Technicians.ToListAsync();
+            ViewBag.SubmissionId = submissionId.Value;
 
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitOnline(Dictionary<int, string>? ratings, Dictionary<int, string>? techRatings)
+        public async Task<IActionResult> SubmitOnline(int submissionId, Dictionary<int, string>? ratings, Dictionary<int, string>? techRatings)
         {
+            var submission = await _context.SurveySubmissions
+                .FirstOrDefaultAsync(s => s.id == submissionId && s.survey_types_id == 2);
+
+            if (submission == null)
+            {
+                TempData["FormError"] = "Isi data identitas terlebih dahulu untuk memulai survey Online.";
+                return RedirectToAction("Identitas", new { returnTo = "online" });
+            }
+
             ratings ??= new Dictionary<int, string>();
             techRatings ??= new Dictionary<int, string>();
-
-            // 1. Create the main submission header (Survey Type 2 = Online)
-            var submission = new SurveySubmission 
-            { 
-                survey_types_id = 2, 
-                submitted_at = DateTime.Now 
-            };
-            _context.SurveySubmissions.Add(submission);
-            await _context.SaveChangesAsync();
 
             // 2. Fetch all question metadata to get categories automatically
             var questionIds = ratings.Keys.ToList();

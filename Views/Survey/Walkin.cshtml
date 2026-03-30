@@ -19,6 +19,7 @@
         }
 
         <form id="walkinForm" asp-action="SubmitWalkin" method="post" novalidate>
+            <input type="hidden" name="submissionId" value="@ViewBag.SubmissionId" />
             <div id="formError" class="validation-error" style="display:none;"></div>
             
             @foreach (var q in ViewBag.Questions)
