@@ -43,14 +43,29 @@
                                 <option selected disabled>Pilih layanan terlebih dahulu</option>
                             </select>
                         }
+                        else
+                        {
+                            // Generic dropdown for any other selection question
+                            <select name="ratings[@q.id]" class="styled-select" required>
+                                <option selected disabled>Pilih salah satu</option>
+                                <option value="Sangat Puas">Sangat Puas</option>
+                                <option value="Puas">Puas</option>
+                                <option value="Cukup">Cukup</option>
+                                <option value="Tidak Puas">Tidak Puas</option>
+                            </select>
+                        }
                     }
-                    else if (q.input_type == "likert_5")
+                    else if (q.input_type == "likert_5" || q.input_type == "agreement_5")
                     {
                         <partial name="_LikertRating" model="q" />
                     }
                     else if (q.input_type == "nps_10")
                     {
                         <partial name="_NPSRating" model="q" />
+                    }
+                    else if (q.input_type == "text")
+                    {
+                        <textarea name="ratings[@q.id]" class="feedback-input" rows="4" placeholder="Ketik Disini......." required></textarea>
                     }
                 </div>
             }

@@ -25,12 +25,34 @@
 
     <form asp-action="SubmitOnline" method="post" id="surveyForm">
         
+        <!-- Step 1: Category 1 -->
         <div class="step" id="step1">
             @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 1))
             {
                 <div class="question-group">
                     <p class="question-text">@q.question_body</p>
-                    <partial name="_LikertRating" model="q" />
+                    @if (q.input_type == "likert_5" || q.input_type == "agreement_5")
+                    {
+                        <partial name="_LikertRating" model="q" />
+                    }
+                    else if (q.input_type == "nps_10")
+                    {
+                        <partial name="_NPSRating" model="q" />
+                    }
+                    else if (q.input_type == "text")
+                    {
+                        <textarea name="ratings[@q.id]" class="feedback-input" rows="3" placeholder="Ketik Disini..."></textarea>
+                    }
+                    else if (q.input_type == "selection")
+                    {
+                        <select name="ratings[@q.id]" class="styled-select">
+                            <option value="">-- Pilih --</option>
+                            <option value="Sangat Puas">Sangat Puas</option>
+                            <option value="Puas">Puas</option>
+                            <option value="Cukup">Cukup</option>
+                            <option value="Tidak Puas">Tidak Puas</option>
+                        </select>
+                    }
                 </div>
             }
             <div class="nav-actions">
@@ -38,12 +60,34 @@
             </div>
         </div>
 
+        <!-- Step 2: Category 2 -->
         <div class="step" id="step2" style="display:none;">
             @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 2))
             {
                 <div class="question-group">
                     <p class="question-text">@q.question_body</p>
-                    <partial name="_LikertRating" model="q" />
+                    @if (q.input_type == "likert_5" || q.input_type == "agreement_5")
+                    {
+                        <partial name="_LikertRating" model="q" />
+                    }
+                    else if (q.input_type == "nps_10")
+                    {
+                        <partial name="_NPSRating" model="q" />
+                    }
+                    else if (q.input_type == "text")
+                    {
+                        <textarea name="ratings[@q.id]" class="feedback-input" rows="3" placeholder="Ketik Disini..."></textarea>
+                    }
+                    else if (q.input_type == "selection")
+                    {
+                        <select name="ratings[@q.id]" class="styled-select">
+                            <option value="">-- Pilih --</option>
+                            <option value="Sangat Puas">Sangat Puas</option>
+                            <option value="Puas">Puas</option>
+                            <option value="Cukup">Cukup</option>
+                            <option value="Tidak Puas">Tidak Puas</option>
+                        </select>
+                    }
                 </div>
             }
             <div class="nav-actions">
@@ -52,6 +96,7 @@
             </div>
         </div>
 
+        <!-- Step 3: Teknisi (NPS) -->
         <div class="step" id="step3" style="display:none;">
             <p class="survey-caption">
                 Pilih <strong>minimal 1</strong> teknisi yang melayani Anda (boleh lebih dari satu).<br>
@@ -73,12 +118,35 @@
             </div>
         </div>
 
+        <!-- Step 4: Category 4 (text feedback) -->
         <div class="step" id="step4" style="display:none;">
             @foreach (var q in allQuestions.Where(x => x.survey_categories_id == 4))
             {
                 <div class="question-group">
                     <p class="question-text">@q.question_body</p>
-                    <textarea name="ratings[@q.id]" class="feedback-input" rows="4" placeholder="Ketik Disini......."></textarea>
+                    @if (q.input_type == "likert_5" || q.input_type == "agreement_5")
+                    {
+                        <partial name="_LikertRating" model="q" />
+                    }
+                    else if (q.input_type == "nps_10")
+                    {
+                        <partial name="_NPSRating" model="q" />
+                    }
+                    else if (q.input_type == "selection")
+                    {
+                        <select name="ratings[@q.id]" class="styled-select">
+                            <option value="">-- Pilih --</option>
+                            <option value="Sangat Puas">Sangat Puas</option>
+                            <option value="Puas">Puas</option>
+                            <option value="Cukup">Cukup</option>
+                            <option value="Tidak Puas">Tidak Puas</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <!-- Default: text for category 4 -->
+                        <textarea name="ratings[@q.id]" class="feedback-input" rows="4" placeholder="Ketik Disini......."></textarea>
+                    }
                 </div>
             }
             <div class="nav-actions">
@@ -185,9 +253,8 @@
         if (stepNumber === 3) progressFill.classList.add('progress-fill-late');
         if (stepNumber === 4) progressFill.classList.add('progress-fill-final');
         
-        // Make container wide only for the tech grid step
         const container = document.getElementById('mainContainer');
-        if(stepNumber === 3) container.classList.add('survey-container-wide');
+        if (stepNumber === 3) container.classList.add('survey-container-wide');
         else container.classList.remove('survey-container-wide');
 
         window.scrollTo(0, 0);
@@ -214,11 +281,9 @@
         const card = document.getElementById('tech_card_' + techId);
         card.classList.add('selected');
         
-        // Highlight button
         card.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
 
-        // Set hidden input value
         document.getElementById('input_tech_' + techId).value = value;
         clearStepError();
     }
