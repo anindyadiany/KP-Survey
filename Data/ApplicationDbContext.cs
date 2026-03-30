@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Question> Questions { get; set; }
     public DbSet<SurveySubmission> SurveySubmissions { get; set; }
     public DbSet<QuestionResponse> QuestionResponses { get; set; }
+    public DbSet<SurveyCategory> SurveyCategories { get; set; } // ← needed
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,5 +25,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Question>().ToTable("questions");
         modelBuilder.Entity<SurveyCategory>().ToTable("survey_categories");
         modelBuilder.Entity<SurveyType>().ToTable("survey_types");
+        // inside OnModelCreating:
+        modelBuilder.Entity<Question>()
+            .HasOne(q => q.SurveyCategory)
+            .WithMany()
+            .HasForeignKey(q => q.survey_categories_id);
     }
 }

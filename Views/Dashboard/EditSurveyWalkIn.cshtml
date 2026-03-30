@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <title>Edit Survey - Online</title>
+    <title>Edit Survey - Walk In</title>
 </head>
 <body class="dashboard-body">
 
@@ -18,10 +18,10 @@
 
     <main class="dashboard-main">
         <h1 style="text-align:left; margin: 0 0 28px 0; font-size: 2rem; color: #111;">
-            Edit Survey / Online
+            Edit Survey / Walk In
         </h1>
 
-        <form method="post" action="/Dashboard/SaveSurveyOnline">
+        <form method="post" action="/Dashboard/SaveSurveyWalkIn">
             @Html.AntiForgeryToken()
             @foreach (var group in categories)
             {
@@ -31,11 +31,11 @@
                         <h2 style="font-size:1.3rem; font-weight:700; color:#111; margin:0;">
                             @categoryTitle
                         </h2>
-                            <button type="button"
-                                    style="background:#2a408e; color:white; border:none; border-radius:10px; padding:8px 18px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:inherit; font-size:15px;"
-                                    onclick="addQuestion(this, @group.Key)">
-                                <i class="bi bi-plus-lg"></i> Tambah Pertanyaan
-                            </button>
+                        <button type="button"
+                                style="background:#2a408e; color:white; border:none; border-radius:10px; padding:8px 18px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:inherit; font-size:15px;"
+                                onclick="addQuestion(this, @group.Key)">
+                            <i class="bi bi-plus-lg"></i> Tambah Pertanyaan
+                        </button>
                     </div>
 
                     <div class="question-list" data-category="@group.Key">
@@ -87,7 +87,7 @@
         </form>
     </main>
 
-    <!-- Input Type Modal (outside form, inside body) -->
+    <!-- Input Type Modal -->
     <div id="typeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:999; align-items:center; justify-content:center;">
         <div style="background:white; border-radius:20px; padding:32px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); position:relative;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
@@ -115,17 +115,14 @@
         </div>
     </div>
 
-    <!-- ONE clean script block -->
     <script>
         let activeTypeBtn = null;
 
-        // --- Modal ---
         function openTypeModal(btn) {
             activeTypeBtn = btn;
             const modal = document.getElementById('typeModal');
             modal.style.display = 'flex';
 
-            // Highlight currently selected type
             const row = btn.closest('.question-row');
             const currentType = row.querySelector('input[name="questionInputTypes"]').value;
             modal.querySelectorAll('button[onclick^="selectType"]').forEach(b => {
@@ -148,12 +145,10 @@
             closeTypeModal();
         }
 
-        // Close modal on backdrop click
         document.getElementById('typeModal').addEventListener('click', function(e) {
             if (e.target === this) closeTypeModal();
         });
 
-        // --- Add question ---
         function addQuestion(btn, categoryId) {
             const list = document.querySelector(`.question-list[data-category="${categoryId}"]`);
             const row = document.createElement('div');
@@ -177,7 +172,6 @@
             list.appendChild(row);
         }
 
-        // --- Remove question ---
         function removeQuestion(btn) {
             const row = btn.closest('.question-row');
             const idInput = row.querySelector('input[name="questionIds"]');

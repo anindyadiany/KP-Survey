@@ -2,6 +2,11 @@
     var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
     bool isResponsesActive = currentAction != null && currentAction.Contains("Responses");
     bool isEditActive = currentAction != null && currentAction.Contains("EditSurvey");
+
+    // For Responses tab, detect which sub-tab is active from query string
+    var currentTab = Context.Request.Query["tab"].ToString();
+    bool isResponsesWalkIn = isResponsesActive && currentTab == "walkin";
+    bool isResponsesOnline = isResponsesActive && currentTab != "walkin";
 }
 
 <aside class="sidebar-container">
@@ -9,11 +14,12 @@
         <img src="~/assets/pertaminalogo.png" style="width: 140px;" alt="Logo"> 
     </div>
     <nav style="width: 100%;">
+
         <a href="@Url.Action("Index", "Dashboard")" class="nav-item @(currentAction == "Index" ? "active" : "")">
             <i class="bi bi-house-door-fill" style="margin-right:12px;"></i><span>Home</span>
         </a>
 
-        @* Edit Survey Group [cite: 43] *@
+        @* Edit Survey Group *@
         <div class="nav-group">
             <a href="@Url.Action("EditSurveyOnline", "Dashboard")" class="nav-item @(isEditActive ? "active" : "")">
                 <i class="bi bi-pencil-square" style="margin-right:12px;"></i><span>Edit Survey</span>
@@ -21,26 +27,51 @@
             @if (isEditActive) {
                 <div class="sub-nav" style="padding-left: 55px; display: flex; flex-direction: column; gap: 15px; margin: 15px 0 25px 0;">
                     <a href="@Url.Action("EditSurveyWalkIn", "Dashboard")" 
-                    style="text-decoration: none; font-size: 1rem; 
-                            color: @(currentAction == "EditSurveyWalkIn" ? "#2a408e" : "#888"); 
-                            font-weight: 700;"> @* Increased weight and size *@
-                    Walk In
+                       style="text-decoration: none; font-size: 1rem; 
+                              color: @(currentAction == "EditSurveyWalkIn" ? "#2a408e" : "#888"); 
+                              font-weight: 700;">
+                        Walk In
                     </a>
                     <a href="@Url.Action("EditSurveyOnline", "Dashboard")" 
-                    style="text-decoration: none; font-size: 1rem; 
-                            color: @(currentAction == "EditSurveyOnline" ? "#2a408e" : "#888"); 
-                            font-weight: 700;"> @* Increased weight and size *@
-                    Online
+                       style="text-decoration: none; font-size: 1rem; 
+                              color: @(currentAction == "EditSurveyOnline" ? "#2a408e" : "#888"); 
+                              font-weight: 700;">
+                        Online
                     </a>
                 </div>
             }
         </div>
 
-        @* Responses Group [cite: 44] *@
+        @* Responses Group *@
         <div class="nav-group">
-            <a href="@Url.Action("OnlineResponses", "Dashboard")" class="nav-item @(isResponsesActive ? "active" : "")">
+            <a href="@Url.Action("Responses", "Dashboard", new { tab = "online" })" class="nav-item @(isResponsesActive ? "active" : "")">
                 <i class="bi bi-archive" style="margin-right:12px;"></i><span>Responses</span>
             </a>
+            @if (isResponsesActive) {
+                <div class="sub-nav" style="padding-left: 55px; display: flex; flex-direction: column; gap: 15px; margin: 15px 0 25px 0;">
+                    <a href="@Url.Action("Responses", "Dashboard", new { tab = "walkin" })"
+                       style="text-decoration: none; font-size: 1rem;
+                              color: @(isResponsesWalkIn ? "#2a408e" : "#888");
+                              font-weight: 700;">
+                        Walk In
+                    </a>
+                    <a href="@Url.Action("Responses", "Dashboard", new { tab = "online" })"
+                       style="text-decoration: none; font-size: 1rem;
+                              color: @(isResponsesOnline ? "#2a408e" : "#888");
+                              font-weight: 700;">
+                        Online
+                    </a>
+                </div>
+            }
         </div>
+
+        <a href="@Url.Action("EditTeknisi", "Dashboard")" class="nav-item @(currentAction == "EditTeknisi" ? "active" : "")">
+            <i class="bi bi-people" style="margin-right:12px;"></i><span>Edit Teknisi</span>
+        </a>
+
+        <a href="@Url.Action("User", "Dashboard")" class="nav-item @(currentAction == "User" ? "active" : "")">
+            <i class="bi bi-person" style="margin-right:12px;"></i><span>User</span>
+        </a>
+
     </nav>
 </aside>
