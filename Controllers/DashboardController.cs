@@ -267,18 +267,45 @@ public class DashboardController : Controller
                 .ToDictionary(g => g.Key, g => g.Count());
         }
 
-        // NPS scores per technician (average of techRating responses)
-        var techResponses = await _context.QuestionResponses
-            .Where(r => submissionIds.Contains(r.survey_submissions_id)
-                    && r.technicians_id != null
-                    && r.rating_score != null)
-            .ToListAsync();
+        // Replace the NPS section with this:
 
+        // Online: tech ratings are stored under category 3 (NPS Teknisi question)
+        // WalkIn: ALL responses have technicians_id, so we need only likert/nps question responses
+        List<QuestionResponse> techResponses;
+
+        if (surveyTypeId == 2) // Online
+        {
+            // Only grab responses that are specifically tech NPS ratings (have technicians_id)
+            techResponses = await _context.QuestionResponses
+                .Where(r => submissionIds.Contains(r.survey_submissions_id)
+                        && r.technicians_id != null
+                        && r.rating_score != null)
+                .ToListAsync();
+        }
+        else // Walk-In
+        {
+            // All responses have technicians_id, so filter to only rating questions
+            // to avoid counting text responses etc.
+            var ratingQIds = questions
+                .Where(q => q.input_type == "likert_5" 
+                        || q.input_type == "agreement_5" 
+                        || q.input_type == "nps_10")
+                .Select(q => q.id).ToList();
+
+            techResponses = await _context.QuestionResponses
+                .Where(r => submissionIds.Contains(r.survey_submissions_id)
+                        && r.technicians_id != null
+                        && r.rating_score != null
+                        && ratingQIds.Contains(r.questions_id))
+                .ToListAsync();
+        }
+
+        // Average per technician
         var npsScores = techResponses
             .GroupBy(r => r.technicians_id!.Value)
             .ToDictionary(g => g.Key, g => g.Average(r => r.rating_score!.Value));
 
-        // Technicians
+        // Only show technicians that have responses
         var techIds = npsScores.Keys.ToList();
         var technicians = await _context.Technicians
             .Where(t => techIds.Contains(t.id))
