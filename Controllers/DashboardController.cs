@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SurveyApp.Data;
 using SurveyApp.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SurveyApp.Controllers;
 
+[Authorize]
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;

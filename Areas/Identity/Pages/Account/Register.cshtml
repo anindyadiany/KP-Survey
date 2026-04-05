@@ -1,0 +1,56 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Survey IT</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="page-center">
+
+    <div class="survey-container" style="max-width: 500px;">
+        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <div asp-validation-summary="ModelOnly" class="validation-error" role="alert"></div>
+
+            <div class="question-group">
+                <p class="question-text" style="text-align: left; margin-left: 5px;">Email</p>
+                <input asp-for="Input.Email" class="feedback-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" style="color: #d9534f; font-size: 12px;"></span>
+            </div>
+
+            <div class="question-group" style="margin-top: 15px;">
+                <p class="question-text" style="text-align: left; margin-left: 5px;">Password</p>
+                <input asp-for="Input.Password" class="feedback-input" type="password" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <span asp-validation-for="Input.Password" style="color: #d9534f; font-size: 12px;"></span>
+            </div>
+
+            <div class="question-group" style="margin-top: 15px;">
+                <p class="question-text" style="text-align: left; margin-left: 5px;">Konfirmasi Password</p>
+                <input asp-for="Input.ConfirmPassword" class="feedback-input" type="password" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <span asp-validation-for="Input.ConfirmPassword" style="color: #d9534f; font-size: 12px;"></span>
+            </div>
+
+            <div class="nav-actions">
+                <button id="registerSubmit" type="submit" class="btn-submit" style="width: 100%;">Daftar</button>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 13px;">
+                <p>
+                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" style="color: var(--primary-blue); text-decoration: none; font-weight: bold;">Sudah Punya Akun? Masuk</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
