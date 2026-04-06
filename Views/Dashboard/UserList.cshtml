@@ -1,0 +1,82 @@
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>User</title>
+</head>
+<body class="dashboard-body">
+
+    <partial name="_Tabs" />
+
+    <main class="dashboard-main">
+        <h1 style="text-align:left; margin: 0 0 28px 0; font-size: 2rem; color: #111;">
+            User
+        </h1>
+
+        @if (TempData["Success"] != null)
+        {
+            <div style="background:rgba(39,174,96,0.12); border:1px solid #27ae60; color:#1a5e35; border-radius:10px; padding:12px 18px; margin-bottom:20px; font-weight:600;">
+                @TempData["Success"]
+            </div>
+        }
+
+        <div class="dashboard-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="font-size:1.3rem; font-weight:700; color:#111; margin:0;">User</h2>
+                <a href="/Identity/Account/Register"
+                   style="background:#2a408e; color:white; border:none; border-radius:10px; padding:8px 18px; font-weight:600; font-size:15px; text-decoration:none; display:flex; align-items:center; gap:6px;">
+                    <i class="bi bi-plus-lg"></i> Tambah User
+                </a>
+            </div>
+
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="border-bottom:2px solid rgba(0,0,0,0.08); text-align:left; font-size:0.9rem; color:#444;">
+                        <th style="padding:12px;">ID</th>
+                        <th style="padding:12px;">Nama</th>
+                        <th style="padding:12px;">Email</th>
+                        <th style="padding:12px; text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (user, index) in Model.Select((u, i) => (u, i)))
+                    {
+                        var initials = string.IsNullOrEmpty(user.Email) ? "?" : user.Email.Substring(0, 1).ToUpper();
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.06);">
+                            <td style="padding:14px; color:#555;">@(index + 1)</td>
+                            <td style="padding:14px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#2a408e,#4a60ae); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;">
+                                        @initials
+                                    </div>
+                                    <span style="font-weight:600; color:#111;">@(user.UserName ?? user.Email)</span>
+                                </div>
+                            </td>
+                            <td style="padding:14px; color:#555;">@user.Email</td>
+                            <td style="padding:14px; text-align:center;">
+                                <form method="post" action="/Dashboard/DeleteUser" style="margin:0; display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit"
+                                            onclick="return confirm('Hapus user @user.Email?')"
+                                            style="width:36px;height:36px;border:1.5px solid #e74c3c;border-radius:9px;background:rgba(231,76,60,0.08);color:#e74c3c;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using SurveyApp.Data;
 using SurveyApp.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace SurveyApp.Controllers;
 
@@ -10,10 +11,12 @@ namespace SurveyApp.Controllers;
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public DashboardController(ApplicationDbContext context)
+    public DashboardController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index()
@@ -212,7 +215,7 @@ public class DashboardController : Controller
         return RedirectToAction("EditTeknisi");
     }
 
-
+    // ── Responses ───────────────────────────────────────────────────
 
     public async Task<IActionResult> OnlineResponses(string tab = "online", int month = 0, int year = 0)
     {
@@ -223,7 +226,6 @@ public class DashboardController : Controller
     {
         int surveyTypeId = tab == "walkin" ? 1 : 2;
 
-        // Base query for submissions filtered by type + optional month/year
         var submissionsQuery = _context.SurveySubmissions
             .Where(s => s.survey_types_id == surveyTypeId);
 
@@ -234,21 +236,18 @@ public class DashboardController : Controller
 
         var submissionIds = await submissionsQuery.Select(s => s.id).ToListAsync();
 
-        // Questions for this survey type
         var questions = await _context.Questions
             .Include(q => q.SurveyCategory)
             .Where(q => q.survey_types_id == surveyTypeId && q.is_active)
             .OrderBy(q => q.survey_categories_id).ThenBy(q => q.id)
             .ToListAsync();
 
-        // Categories
         var categoryIds = questions.Select(q => q.survey_categories_id).Distinct().ToList();
         var categories = await _context.SurveyCategories
             .Where(c => categoryIds.Contains(c.id))
             .OrderBy(c => c.id)
             .ToListAsync();
 
-        // Chart data: for each likert/nps question, count responses per rating value
         var ratingQuestionIds = questions
             .Where(q => q.input_type == "likert_5" || q.input_type == "agreement_5" || q.input_type == "nps_10")
             .Select(q => q.id).ToList();
@@ -259,7 +258,6 @@ public class DashboardController : Controller
                     && r.rating_score != null)
             .ToListAsync();
 
-        // chartData[questionId][score] = count
         var chartData = new Dictionary<int, Dictionary<int, int>>();
         foreach (var qid in ratingQuestionIds)
         {
@@ -269,28 +267,21 @@ public class DashboardController : Controller
                 .ToDictionary(g => g.Key, g => g.Count());
         }
 
-        // Replace the NPS section with this:
-
-        // Online: tech ratings are stored under category 3 (NPS Teknisi question)
-        // WalkIn: ALL responses have technicians_id, so we need only likert/nps question responses
         List<QuestionResponse> techResponses;
 
-        if (surveyTypeId == 2) // Online
+        if (surveyTypeId == 2)
         {
-            // Only grab responses that are specifically tech NPS ratings (have technicians_id)
             techResponses = await _context.QuestionResponses
                 .Where(r => submissionIds.Contains(r.survey_submissions_id)
                         && r.technicians_id != null
                         && r.rating_score != null)
                 .ToListAsync();
         }
-        else // Walk-In
+        else
         {
-            // All responses have technicians_id, so filter to only rating questions
-            // to avoid counting text responses etc.
             var ratingQIds = questions
-                .Where(q => q.input_type == "likert_5" 
-                        || q.input_type == "agreement_5" 
+                .Where(q => q.input_type == "likert_5"
+                        || q.input_type == "agreement_5"
                         || q.input_type == "nps_10")
                 .Select(q => q.id).ToList();
 
@@ -302,18 +293,15 @@ public class DashboardController : Controller
                 .ToListAsync();
         }
 
-        // Average per technician
         var npsScores = techResponses
             .GroupBy(r => r.technicians_id!.Value)
             .ToDictionary(g => g.Key, g => g.Average(r => r.rating_score!.Value));
 
-        // Only show technicians that have responses
         var techIds = npsScores.Keys.ToList();
         var technicians = await _context.Technicians
             .Where(t => techIds.Contains(t.id))
             .ToListAsync();
 
-        // Text feedbacks
         var feedbackQuestionIds = questions
             .Where(q => q.input_type == "text")
             .Select(q => q.id).ToList();
@@ -325,7 +313,6 @@ public class DashboardController : Controller
             .Select(r => r.text_response!)
             .ToListAsync();
 
-        // Category colors: first category = blue, second = red, rest = default blue
         var categoryColors = new Dictionary<int, string>();
         var colorList = new[] { "#2a408e", "#e74c3c", "#27ae60", "#f5a623" };
         for (int i = 0; i < categories.Count; i++)
@@ -345,4 +332,24 @@ public class DashboardController : Controller
         return View("Responses");
     }
 
+    // ── User ────────────────────────────────────────────────────────
+
+    public IActionResult UserList()
+    {
+        var users = _userManager.Users.OrderBy(u => u.Email).ToList();
+        return View(users);
+    }
+
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> DeleteUser(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            await _userManager.DeleteAsync(user);
+            TempData["Success"] = "User berhasil dihapus.";
+        }
+        return RedirectToAction("UserList");
+    }
 }
