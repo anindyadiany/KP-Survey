@@ -1,0 +1,600 @@
+        body.login-page {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url("/assets/PertaminaBG.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            padding: 44px 48px;
+            width: 100%;
+            max-width: 440px;
+            box-sizing: border-box;
+        }
+        .login-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: rgba(255,255,255,0.8);
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-input:focus {
+            outline: none;
+            border-color: #2a408e;
+            box-shadow: 0 0 0 3px rgba(42, 64, 142, 0.12);
+        }
+        .login-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: #2a408e;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .login-btn:hover {
+            background: #1e2f6e;
+        }
+
+/* --- 1. FONTS & RESET --- */
+@font-face {
+  font-family: "Cedora";
+  src: url("../assets/cedora/Cedora-RegularStd.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Cedora";
+  src: url("../assets/cedora/Cedora-BoldStd.otf") format("opentype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+:root {
+  --primary-blue: #2a408e;
+  --light-bg: #ffffff;
+  --field-bg: #f8f8f8;
+  --field-border: #d9d9d9;
+}
+
+/* --- 2. LAYOUT & BACKGROUND --- */
+body {
+  font-family: "Cedora", sans-serif;
+  font-size: 14px;
+  background-image: url("../assets/PertaminaBG.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* --- 3. THE GLASS RECTANGLE (Scaled Down) --- */
+.survey-container {
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 30px;
+  padding: clamp(20px, 3vw, 34px) clamp(18px, 4vw, 42px);
+  width: 90%;
+  max-width: 880px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* --- 4. TEXT STYLES (Refined Spacing) --- */
+.survey-title {
+  font-size: clamp(26px, 3.6vw, 44px);
+  font-weight: 700;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: clamp(14px, 2.2vw, 22px);
+}
+
+.question-group {
+  margin-bottom: 16px;
+}
+
+.question-text {
+  font-size: clamp(13px, 1.25vw, 18px);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.scale-label {
+  font-size: 11px;
+  color: #777;
+  margin: 0 8px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 20px 0;
+}
+
+.progress-track {
+  width: 100%;
+  max-width: 720px;
+  height: 6px;
+  margin: 0 auto 20px;
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background-color: var(--primary-blue);
+  border-radius: 999px;
+}
+
+.progress-fill-start {
+  width: 10%;
+}
+
+.progress-fill-mid {
+  width: 35%;
+}
+
+.progress-fill-late {
+  width: 55%;
+}
+
+.progress-fill-final {
+  width: 75%;
+}
+
+.progress-fill-complete {
+  width: 100%;
+}
+
+/* --- 5. INTERACTIVE INPUTS --- */
+.styled-select {
+  width: 100%;
+  max-width: 390px;
+  display: block;
+  margin: 0 auto;
+  padding: 10px 40px 10px 14px;
+  font-size: 14px;
+  background-color: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.styled-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(42, 64, 142, 0.15);
+}
+
+.rating-scale {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rating-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--light-bg);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rating-number.selected {
+  background-color: var(--primary-blue);
+  color: white;
+}
+
+.btn-submit {
+  display: block;
+  margin: 24px auto 0;
+  padding: 11px 44px;
+  background-color: var(--primary-blue);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.validation-error {
+  max-width: 640px;
+  margin: 0 auto 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d9534f;
+  background: rgba(217, 83, 79, 0.12);
+  color: #7f1d1d;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nav-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.nav-actions .btn-submit {
+  margin: 0;
+  min-width: 150px;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 11px 44px;
+  border: 1px solid var(--primary-blue);
+  border-radius: 12px;
+  color: var(--primary-blue);
+  font-size: 15px;
+  font-weight: 600;
+  background: transparent;
+  text-decoration: none;
+}
+
+.survey-container-wide {
+  max-width: 1120px;
+}
+
+body.page-top {
+  align-items: flex-start;
+}
+
+body.page-center {
+  align-items: center;
+}
+
+.thankyou-container {
+  text-align: center;
+  max-width: 980px;
+}
+
+.thankyou-title {
+  margin-bottom: 12px;
+}
+
+.thankyou-illustration {
+  width: min(360px, 80%);
+  height: auto;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.thankyou-text {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #2f2f2f;
+}
+
+.survey-caption {
+  margin: -4px auto 16px;
+  text-align: center;
+  color: #4d4d4d;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.tech-card {
+  height: 148px;
+  min-height: 148px;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tech-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.tech-card.selected {
+  display: grid;
+  grid-template-columns: minmax(96px, 0.9fr) minmax(124px, 1fr);
+  grid-template-areas:
+    "avatar nps"
+    "name nps";
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: center;
+  justify-items: start;
+  justify-content: start;
+  column-gap: 8px;
+  row-gap: 6px;
+  padding: 10px 30px 10px 10px;
+  border-color: var(--primary-blue);
+  box-shadow:
+    0 0 0 2px rgba(42, 64, 142, 0.18),
+    0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.tech-card.selected .tech-avatar {
+  grid-area: avatar;
+  justify-self: center;
+}
+
+.tech-card.selected .tech-name {
+  grid-area: name;
+  text-align: center;
+  margin: 0;
+  justify-self: center;
+}
+
+.tech-card:focus-visible {
+  outline: 2px solid rgba(42, 64, 142, 0.35);
+  outline-offset: 2px;
+}
+
+.tech-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    overflow: hidden; /* Important to keep the image circular */
+    margin-bottom: 10px;
+}
+
+.tech-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Prevents the face from stretching */
+}
+
+.tech-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.tech-nps {
+  display: none;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  max-width: 170px;
+  margin-top: 4px;
+}
+
+.tech-card.selected .tech-nps {
+  grid-area: nps;
+  display: grid;
+  margin-top: 0;
+  align-self: center;
+  justify-self: start;
+}
+
+.nps-btn {
+  width: 100%;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nps-btn.selected {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: #fff;
+}
+
+.rating-scale-compact {
+  gap: 6px;
+}
+
+.rating-number-compact {
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+}
+
+.feedback-input {
+  width: 100%;
+  max-width: 640px;
+  display: block;
+  margin: 0 auto;
+  padding: 14px 16px;
+  border: 1px solid var(--field-border);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.72);
+  font-family: inherit;
+  font-size: 14px;
+  color: #333;
+  resize: vertical;
+}
+
+.feedback-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(42, 64, 142, 0.15);
+}
+
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .survey-container {
+    width: 100%;
+    border-radius: 20px;
+    max-height: calc(100vh - 28px);
+  }
+
+  .question-text {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .styled-select {
+    max-width: 100%;
+  }
+
+  .rating-number {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .rating-number-compact {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .scale-label {
+    width: 100%;
+    text-align: center;
+    margin: 2px 0;
+  }
+
+  .nav-actions {
+    gap: 10px;
+  }
+
+  .nav-actions .btn-submit,
+  .btn-outline {
+    min-width: 120px;
+    padding: 10px 28px;
+    font-size: 14px;
+  }
+
+  .tech-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .tech-card {
+    height: 132px;
+    min-height: 132px;
+  }
+
+  .tech-card.selected {
+    display: flex;
+    grid-template-columns: none;
+    grid-template-areas: none;
+    align-items: center;
+    justify-content: center;
+    row-gap: 0;
+    column-gap: 0;
+    padding: 10px;
+  }
+
+  .tech-card.selected .tech-nps {
+    max-width: 156px;
+  }
+
+  .nps-btn {
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .feedback-input {
+    max-width: 100%;
+  }
+
+  .thankyou-illustration {
+    width: min(280px, 90%);
+  }
+
+  .thankyou-text {
+    font-size: 16px;
+  }
+}

@@ -11,42 +11,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Survey IT</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
-<body class="page-center">
+<body class="login-page">
 
-    <div class="survey-container" style="max-width: 500px;">
-        <h1 class="survey-title">Survey Kepuasan Layanan IT</h1>
+    <div class="login-card">
+        <div style="text-align:center; margin-bottom:28px;">
+            <img src="/assets/pertaminalogo.png" style="width:130px; margin-bottom:16px;" alt="Logo" />
+            <h1 style="font-size:1.5rem; font-weight:800; color:#111; margin:0;">Daftar Akun</h1>
+        </div>
 
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="validation-error" role="alert"></div>
+            <div asp-validation-summary="ModelOnly" class="validation-error" role="alert" style="margin-bottom:16px;"></div>
 
-            <div class="question-group">
-                <p class="question-text" style="text-align: left; margin-left: 5px;">Email</p>
-                <input asp-for="Input.Email" class="feedback-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <span asp-validation-for="Input.Email" style="color: #d9534f; font-size: 12px;"></span>
+            <div style="margin-bottom:16px;">
+                <label class="login-label">Email</label>
+                <input asp-for="Input.Email" class="login-input"
+                       autocomplete="username" aria-required="true"
+                       placeholder="nama@email.com" />
+                <span asp-validation-for="Input.Email" style="color:#d9534f; font-size:12px;"></span>
             </div>
 
-            <div class="question-group" style="margin-top: 15px;">
-                <p class="question-text" style="text-align: left; margin-left: 5px;">Password</p>
-                <input asp-for="Input.Password" class="feedback-input" type="password" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <span asp-validation-for="Input.Password" style="color: #d9534f; font-size: 12px;"></span>
+            <div style="margin-bottom:16px;">
+                <label class="login-label">Password</label>
+                <input asp-for="Input.Password" class="login-input" type="password"
+                       autocomplete="new-password" aria-required="true"
+                       placeholder="••••••••" />
+                <span asp-validation-for="Input.Password" style="color:#d9534f; font-size:12px;"></span>
             </div>
 
-            <div class="question-group" style="margin-top: 15px;">
-                <p class="question-text" style="text-align: left; margin-left: 5px;">Konfirmasi Password</p>
-                <input asp-for="Input.ConfirmPassword" class="feedback-input" type="password" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <span asp-validation-for="Input.ConfirmPassword" style="color: #d9534f; font-size: 12px;"></span>
+            <div style="margin-bottom:24px;">
+                <label class="login-label">Konfirmasi Password</label>
+                <input asp-for="Input.ConfirmPassword" class="login-input" type="password"
+                       autocomplete="new-password" aria-required="true"
+                       placeholder="••••••••" />
+                <span asp-validation-for="Input.ConfirmPassword" style="color:#d9534f; font-size:12px;"></span>
             </div>
 
-            <div class="nav-actions">
-                <button id="registerSubmit" type="submit" class="btn-submit" style="width: 100%;">Daftar</button>
-            </div>
+            <button id="registerSubmit" type="submit" class="login-btn">Daftar</button>
 
-            <div style="text-align: center; margin-top: 20px; font-size: 13px;">
-                <p>
-                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" style="color: var(--primary-blue); text-decoration: none; font-weight: bold;">Sudah Punya Akun? Masuk</a>
-                </p>
+            <div style="text-align:center; margin-top:20px; font-size:13px;">
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl"
+                   style="color:#2a408e; text-decoration:none; font-weight:700;">
+                    Sudah Punya Akun? Masuk
+                </a>
             </div>
         </form>
     </div>
