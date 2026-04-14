@@ -1,7 +1,6 @@
 @model IEnumerable<SurveyApp.Models.Technician>
 @{
     Layout = null;
-    var serviceMap = ViewBag.Services as Dictionary<int, string>;
 }
 <!DOCTYPE html>
 <html lang="id">
@@ -42,41 +41,35 @@
                     <tr style="border-bottom:2px solid rgba(0,0,0,0.08); text-align:left; font-size:0.9rem; color:#444;">
                         <th style="padding:12px;">ID</th>
                         <th style="padding:12px;">Nama</th>
-                        <th style="padding:12px;">Email</th>
-                        <th style="padding:12px;">Divisi</th>
                         <th style="padding:12px; text-align:center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var tech in Model.Select((t, i) => (t, i)))
+                    @foreach (var tech in Model)
                     {
                         <tr style="border-bottom:1px solid rgba(0,0,0,0.06);">
-                            <td style="padding:14px; color:#555;">@(tech.i + 1)</td>
+                            <td style="padding:14px; color:#555;">@tech.id</td>
                             <td style="padding:14px;">
                                 <div style="display:flex; align-items:center; gap:10px;">
-                                    <img src="~/assets/@tech.t.photo_path"
+                                    <img src="~/assets/foto_teknisi/@tech.photo_path"
                                          style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.08);"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                     <div style="display:none; width:36px; height:36px; border-radius:50%; background:#2a408e; color:white; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
-                                        @tech.t.name.Substring(0, 1).ToUpper()
+                                        @(string.IsNullOrWhiteSpace(tech.name) ? "?" : tech.name.Substring(0, 1).ToUpper())
                                     </div>
-                                    <span style="font-weight:600;">@tech.t.name</span>
+                                    <span style="font-weight:600;">@tech.name</span>
                                 </div>
-                            </td>
-                            <td style="padding:14px; color:#555;">@tech.t.email</td>
-                            <td style="padding:14px; color:#555;">
-                                @(serviceMap != null && serviceMap.ContainsKey(tech.t.service_id) ? serviceMap[tech.t.service_id] : "-")
                             </td>
                             <td style="padding:14px; text-align:center;">
                                 <div style="display:flex; justify-content:center; gap:8px;">
-                                    <a href="@Url.Action("EditTeknisiDetail", "Dashboard", new { id = tech.t.id })"
+                                    <a href="@Url.Action("EditTeknisiDetail", "Dashboard", new { id = tech.id })"
                                        style="width:36px;height:36px;border:1.5px solid #f5a623;border-radius:9px;background:rgba(245,166,35,0.08);color:#f5a623;display:flex;align-items:center;justify-content:center;text-decoration:none;">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form method="post" action="/Dashboard/DeleteTeknisi/@tech.t.id" style="margin:0;">
+                                    <form method="post" action="/Dashboard/DeleteTeknisi/@tech.id" style="margin:0;">
                                         @Html.AntiForgeryToken()
                                         <button type="submit"
-                                                onclick="return confirm('Hapus teknisi @tech.t.name?')"
+                                                onclick="return confirm('Hapus teknisi @tech.name?')"
                                                 style="width:36px;height:36px;border:1.5px solid #e74c3c;border-radius:9px;background:rgba(231,76,60,0.08);color:#e74c3c;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                                             <i class="bi bi-trash"></i>
                                         </button>

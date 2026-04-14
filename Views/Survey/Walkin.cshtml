@@ -40,8 +40,8 @@
                         }
                         else if (q.id == 12) // Teknisi Select
                         {
-                            <select name="technicianId" id="technicianSelect" class="styled-select" required disabled>
-                                <option selected disabled>Pilih layanan terlebih dahulu</option>
+                            <select name="technicianId" id="technicianSelect" class="styled-select" required>
+                                <option selected disabled>Memuat teknisi...</option>
                             </select>
                         }
                         else
@@ -88,30 +88,37 @@
         const serviceSelect = document.getElementById('serviceSelect');
         const technicianSelect = document.getElementById('technicianSelect');
 
-        if (serviceSelect && technicianSelect) {
-            serviceSelect.addEventListener('change', function () {
-                const serviceId = this.value;
+        function loadTechnicians() {
+            if (!technicianSelect) return;
 
-                technicianSelect.disabled = false;
-                technicianSelect.innerHTML = '<option selected disabled>Memuat teknisi...</option>';
+            technicianSelect.innerHTML = '<option selected disabled>Memuat teknisi...</option>';
 
-                fetch(`/Survey/GetTechniciansByService?serviceId=${serviceId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        technicianSelect.innerHTML = '<option selected disabled>Pilih salah satu</option>';
-                        data.forEach(tech => {
-                            const option = document.createElement('option');
-                            option.value = tech.id;
-                            option.textContent = tech.name;
-                            technicianSelect.appendChild(option);
-                        });
-                    })
-                    .catch(err => {
-                        console.error('Error fetching technicians:', err);
-                        technicianSelect.innerHTML = '<option selected disabled>Gagal memuat teknisi</option>';
+            fetch('/Survey/GetTechniciansByService?serviceId=0')
+                .then(response => response.json())
+                .then(data => {
+                    technicianSelect.innerHTML = '<option selected disabled>Pilih salah satu</option>';
+                    data.forEach(tech => {
+                        const option = document.createElement('option');
+                        option.value = tech.id;
+                        option.textContent = tech.name;
+                        technicianSelect.appendChild(option);
                     });
+                })
+                .catch(err => {
+                    console.error('Error fetching technicians:', err);
+                    technicianSelect.innerHTML = '<option selected disabled>Gagal memuat teknisi</option>';
+                });
+        }
+
+        if (serviceSelect) {
+            serviceSelect.addEventListener('change', function () {
+                if (technicianSelect && !technicianSelect.value) {
+                    technicianSelect.focus();
+                }
             });
         }
+
+        loadTechnicians();
 
         if (form) {
             form.addEventListener('submit', function (e) {

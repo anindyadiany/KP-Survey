@@ -1,11 +1,21 @@
 @model dynamic
 
 @{
+    var techName = Convert.ToString(Model.name) ?? "";
+    var rawPhotoPath = Convert.ToString(Model.photo_path) ?? "";
+    var photoUrl = string.IsNullOrWhiteSpace(rawPhotoPath)
+        ? ""
+        : (rawPhotoPath.StartsWith("http://") || rawPhotoPath.StartsWith("https://") || rawPhotoPath.StartsWith("/"))
+            ? rawPhotoPath
+            : Url.Content($"~/assets/foto_teknisi/{rawPhotoPath}");
+
     // Generate initials as a fallback
-    var names = Model.name.Split(' ');
+    var names = techName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
     string initials = names.Length > 1 
         ? (names[0][0].ToString() + names[1][0].ToString()).ToUpper() 
-        : names[0][0].ToString().ToUpper();
+        : names.Length == 1
+            ? names[0][0].ToString().ToUpper()
+            : "?";
 }
 
 <article class="tech-card" role="button" tabindex="0" 
@@ -14,10 +24,10 @@
          onkeydown="cardKeydown(event, this)">
     
     <div class="tech-avatar">
-        @if (!string.IsNullOrEmpty(Model.photo_path))
+        @if (!string.IsNullOrEmpty(photoUrl))
         {
             @* Render the image if the path exists *@
-            <img src="@Model.photo_path" alt="@Model.name" class="tech-img" />
+            <img src="@photoUrl" alt="@techName" class="tech-img" />
         }
         else
         {

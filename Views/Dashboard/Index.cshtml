@@ -2,6 +2,8 @@
 @{
     Layout = null;
     var serviceMap = ViewBag.ServiceMap as Dictionary<int, string>;
+    var npsScores = ViewBag.NpsScores as Dictionary<int, double> ?? new Dictionary<int, double>();
+    var npsTableTitle = "Teknisi Terbaik Bulan Ini";
 }
 <!DOCTYPE html>
 <html lang="id">
@@ -64,73 +66,7 @@
             <div style="height:320px;"><canvas id="satisfactionChart"></canvas></div>
         </div>
 
-        <!-- Teknisi Table -->
-        <div class="dashboard-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <p style="font-weight:800; color:#111; font-size:1rem; margin:0;">Teknisi Terbaik Bulan Ini</p>
-                <a href="@Url.Action("EditTeknisi", "Dashboard")"
-                   style="font-size:0.8rem; color:#2a408e; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:4px;">
-                    Lihat Semua <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="text-align:left; border-bottom:2px solid rgba(0,0,0,0.07); color:#888; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em;">
-                        <th style="padding:10px 14px;">Rank</th>
-                        <th style="padding:10px 14px;">Teknisi</th>
-                        <th style="padding:10px 14px;">Email</th>
-                        <th style="padding:10px 14px;">Divisi</th>
-                        <th style="padding:10px 14px; text-align:center;">NPS Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var (tech, index) in Model.Select((v, i) => (v, i)))
-                    {
-                        var initials = string.IsNullOrEmpty(tech.name) ? "?" : tech.name.Substring(0, 1).ToUpper();
-                        var rankColors = new[] { "#FFD700", "#C0C0C0", "#CD7F32", "#aaaaaa" };
-                        var rankBg = new[] { "rgba(255,215,0,0.15)", "rgba(192,192,192,0.15)", "rgba(205,127,50,0.15)", "rgba(170,170,170,0.1)" };
-                        var color = index < rankColors.Length ? rankColors[index] : "#aaa";
-                        var bg = index < rankBg.Length ? rankBg[index] : "rgba(170,170,170,0.1)";
-                        var divisiName = serviceMap != null && serviceMap.ContainsKey(tech.service_id) ? serviceMap[tech.service_id] : "-";
-
-                        <tr style="border-bottom:1px solid rgba(0,0,0,0.05); transition:background 0.15s;">
-                            <td style="padding:14px;">
-                                <span class="rank-badge" style="background:@bg; color:@color;">
-                                    @(index + 1)
-                                </span>
-                            </td>
-                            <td style="padding:14px;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    @if (!string.IsNullOrEmpty(tech.photo_path))
-                                    {
-                                        <div class="avatar-wrap">
-                                            <img src="~/assets/@tech.photo_path"
-                                                 onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';"
-                                                 alt="@tech.name" />
-                                        </div>
-                                        <div class="avatar-fallback" style="display:none;">@initials</div>
-                                    }
-                                    else
-                                    {
-                                        <div class="avatar-fallback">@initials</div>
-                                    }
-                                    <div>
-                                        <div style="font-weight:700; color:#111; font-size:0.95rem;">@tech.name</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="padding:14px; color:#666; font-size:0.9rem;">@tech.email</td>
-                            <td style="padding:14px; color:#666; font-size:0.9rem;">@divisiName</td>
-                            <td style="padding:14px; text-align:center;">
-                                <span style="background:rgba(42,64,142,0.08); color:#2a408e; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.9rem; border:1px solid rgba(42,64,142,0.15);">
-                                    9
-                                </span>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+        <partial name="_NpsTechnicianTable" model="(Model.ToList(), npsScores, npsTableTitle)" />
     </main>
 
     <script>

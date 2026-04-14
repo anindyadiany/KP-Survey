@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using SurveyApp.Data;
 using SurveyApp.Models;
+using System.IO;
 
 namespace SurveyApp.Controllers;
 
@@ -12,11 +13,13 @@ public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IWebHostEnvironment _environment;
 
-    public DashboardController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public DashboardController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment environment)
     {
         _context = context;
         _userManager = userManager;
+        _environment = environment;
     }
 
     public async Task<IActionResult> Index()
@@ -26,10 +29,26 @@ public class DashboardController : Controller
         ViewBag.TotalWalkIn = await _context.SurveySubmissions.CountAsync(s => s.survey_types_id == 1);
         ViewBag.ServiceMap = await _context.Services.ToDictionaryAsync(s => s.id, s => s.name);
 
-        var topTechs = await _context.Technicians
-            .OrderBy(t => t.id)
+        var npsScores = await _context.QuestionResponses
+            .Where(r => r.technicians_id != null && r.rating_score != null)
+            .GroupBy(r => r.technicians_id!.Value)
+            .ToDictionaryAsync(g => g.Key, g => g.Average(r => r.rating_score!.Value));
+
+        var topTechIds = npsScores
+            .OrderByDescending(kvp => kvp.Value)
             .Take(4)
+            .Select(kvp => kvp.Key)
+            .ToList();
+
+        var topTechs = await _context.Technicians
+            .Where(t => topTechIds.Contains(t.id))
             .ToListAsync();
+
+        topTechs = topTechs
+            .OrderByDescending(t => npsScores.ContainsKey(t.id) ? npsScores[t.id] : 0)
+            .ToList();
+
+        ViewBag.NpsScores = npsScores;
 
         return View(topTechs);
     }
@@ -151,7 +170,6 @@ public class DashboardController : Controller
     public async Task<IActionResult> EditTeknisi()
     {
         var teknisi = await _context.Technicians.OrderBy(t => t.id).ToListAsync();
-        ViewBag.Services = await _context.Services.ToDictionaryAsync(s => s.id, s => s.name);
         return View(teknisi);
     }
 
@@ -172,33 +190,76 @@ public class DashboardController : Controller
 
     [HttpPost]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> SaveTeknisi(int id, string name, string email, int service_id, string photo_path)
+    public async Task<IActionResult> SaveTeknisi(int id, string name, string? email, int? service_id, IFormFile? photo_file)
     {
+        var existingTech = id == 0 ? null : await _context.Technicians.FindAsync(id);
+        var storedPhotoPath = existingTech?.photo_path ?? string.Empty;
+
+        if (photo_file != null && photo_file.Length > 0)
+        {
+            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".jpg", ".jpeg", ".png", ".webp", ".gif"
+            };
+
+            var extension = Path.GetExtension(photo_file.FileName);
+            if (!allowedExtensions.Contains(extension))
+            {
+                TempData["Success"] = "Format foto harus jpg, jpeg, png, webp, atau gif.";
+                return RedirectToAction(id == 0 ? nameof(TambahTeknisi) : nameof(EditTeknisiDetail), new { id });
+            }
+
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "assets", "foto_teknisi");
+            Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{BuildTechnicianFileName(name)}{extension}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await photo_file.CopyToAsync(stream);
+
+            storedPhotoPath = fileName;
+        }
+
         if (id == 0)
         {
             _context.Technicians.Add(new Technician
             {
                 name = name,
                 email = email,
-                service_id = service_id,
-                photo_path = photo_path ?? ""
+                service_id = service_id > 0 ? service_id : null,
+                photo_path = storedPhotoPath
             });
         }
         else
         {
-            var tech = await _context.Technicians.FindAsync(id);
-            if (tech != null)
+            if (existingTech != null)
             {
-                tech.name = name;
-                tech.email = email;
-                tech.service_id = service_id;
-                tech.photo_path = photo_path ?? "";
+                existingTech.name = name;
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    existingTech.email = email;
+                }
+                if (service_id.HasValue && service_id.Value > 0)
+                {
+                    existingTech.service_id = service_id;
+                }
+                existingTech.photo_path = storedPhotoPath;
             }
         }
 
         await _context.SaveChangesAsync();
         TempData["Success"] = id == 0 ? "Teknisi berhasil ditambahkan." : "Teknisi berhasil diperbarui.";
         return RedirectToAction("EditTeknisi");
+    }
+
+    private static string BuildTechnicianFileName(string name)
+    {
+        var baseName = string.IsNullOrWhiteSpace(name) ? "teknisi" : name.Trim();
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var cleaned = new string(baseName.Where(character => !invalidChars.Contains(character)).ToArray());
+        cleaned = string.Join(" ", cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        return string.IsNullOrWhiteSpace(cleaned) ? "teknisi" : cleaned;
     }
 
     [HttpPost]
@@ -217,14 +278,26 @@ public class DashboardController : Controller
 
     // ── Responses ───────────────────────────────────────────────────
 
-    public async Task<IActionResult> OnlineResponses(string tab = "online", int month = 0, int year = 0)
+    public async Task<IActionResult> OnlineResponses(int month = 0, int year = 0)
     {
-        return await Responses(tab, month, year);
+        return await BuildResponsesView("ResponsesOnline", 2, "online", month, year);
     }
 
-    public async Task<IActionResult> Responses(string tab = "online", int month = 0, int year = 0)
+    public async Task<IActionResult> WalkInResponses(int month = 0, int year = 0)
     {
-        int surveyTypeId = tab == "walkin" ? 1 : 2;
+        return await BuildResponsesView("ResponsesWalkIn", 1, "walkin", month, year);
+    }
+
+    public IActionResult Responses(string tab = "online", int month = 0, int year = 0)
+    {
+        if (tab == "walkin")
+            return RedirectToAction(nameof(WalkInResponses), new { month, year });
+
+        return RedirectToAction(nameof(OnlineResponses), new { month, year });
+    }
+
+    private async Task<IActionResult> BuildResponsesView(string viewName, int surveyTypeId, string tab, int month, int year)
+    {
 
         var submissionsQuery = _context.SurveySubmissions
             .Where(s => s.survey_types_id == surveyTypeId);
@@ -265,6 +338,71 @@ public class DashboardController : Controller
                 .Where(r => r.questions_id == qid)
                 .GroupBy(r => r.rating_score!.Value)
                 .ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        if (surveyTypeId == 1)
+        {
+            var satisfactionQuestionIds = questions
+                .Where(q => q.input_type == "likert_5" || q.input_type == "agreement_5")
+                .Select(q => q.id)
+                .ToList();
+
+            var walkInSatisfactionResponses = await _context.QuestionResponses
+                .Where(r => submissionIds.Contains(r.survey_submissions_id)
+                    && r.service_id != null
+                    && r.rating_score != null
+                    && satisfactionQuestionIds.Contains(r.questions_id))
+                .ToListAsync();
+
+            var submissionServicePairs = await _context.QuestionResponses
+                .Where(r => submissionIds.Contains(r.survey_submissions_id) && r.service_id != null)
+                .Select(r => new { r.survey_submissions_id, ServiceId = r.service_id!.Value })
+                .Distinct()
+                .ToListAsync();
+
+            var responseCountByServiceId = submissionServicePairs
+                .GroupBy(x => x.ServiceId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var satisfactionByServiceId = walkInSatisfactionResponses
+                .GroupBy(r => r.service_id!.Value)
+                .ToDictionary(
+                    g => g.Key,
+                    g => Enumerable.Range(1, 5)
+                        .Select(score => g.Count(r => r.rating_score == score))
+                        .ToList());
+
+            var serviceIds = responseCountByServiceId.Keys
+                .Union(satisfactionByServiceId.Keys)
+                .Distinct()
+                .ToList();
+
+            var walkInServices = await _context.Services
+                .Where(s => serviceIds.Contains(s.id))
+                .OrderBy(s => s.name)
+                .ToListAsync();
+
+            var serviceLabels = walkInServices.Select(s => s.name).ToList();
+            var serviceCounts = walkInServices
+                .Select(s => responseCountByServiceId.TryGetValue(s.id, out var count) ? count : 0)
+                .ToList();
+
+            var overallSatisfactionCounts = Enumerable.Range(1, 5)
+                .Select(score => walkInSatisfactionResponses.Count(r => r.rating_score == score))
+                .ToList();
+
+            var perServiceSatisfaction = walkInServices
+                .ToDictionary(
+                    s => s.id,
+                    s => satisfactionByServiceId.TryGetValue(s.id, out var counts)
+                        ? counts
+                        : Enumerable.Repeat(0, 5).ToList());
+
+            ViewBag.ServiceOptions = walkInServices;
+            ViewBag.ServiceLabels = serviceLabels;
+            ViewBag.ServiceCounts = serviceCounts;
+            ViewBag.OverallSatisfactionCounts = overallSatisfactionCounts;
+            ViewBag.PerServiceSatisfaction = perServiceSatisfaction;
         }
 
         List<QuestionResponse> techResponses;
@@ -329,7 +467,7 @@ public class DashboardController : Controller
         ViewBag.Feedbacks = feedbacks;
         ViewBag.CategoryColors = categoryColors;
 
-        return View("Responses");
+        return View(viewName);
     }
 
     // ── User ────────────────────────────────────────────────────────

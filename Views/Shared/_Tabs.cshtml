@@ -3,17 +3,17 @@
     bool isResponsesActive = currentAction != null && currentAction.Contains("Responses");
     bool isEditActive = currentAction != null && currentAction.Contains("EditSurvey");
 
-    // For Responses tab, detect which sub-tab is active from query string
+    // For Responses tab, prioritize action route; query tab is only a fallback.
     var currentTab = Context.Request.Query["tab"].ToString();
-    bool isResponsesWalkIn = isResponsesActive && currentTab == "walkin";
-    bool isResponsesOnline = isResponsesActive && currentTab != "walkin";
+    bool isResponsesWalkIn = currentAction == "WalkInResponses" || (currentAction == "Responses" && currentTab == "walkin");
+    bool isResponsesOnline = currentAction == "OnlineResponses" || (currentAction == "Responses" && currentTab != "walkin");
 }
 
 <aside class="sidebar-container">
     <div class="sidebar-logo-wrapper" style="padding: 20px 0;">
         <img src="~/assets/pertaminalogo.png" style="width: 140px;" alt="Logo"> 
     </div>
-    <nav style="width: 100%;">
+    <nav class="sidebar-nav">
 
         <a href="@Url.Action("Index", "Dashboard")" class="nav-item @(currentAction == "Index" ? "active" : "")">
             <i class="bi bi-house-door-fill" style="margin-right:12px;"></i><span>Home</span>
@@ -44,18 +44,18 @@
 
         @* Responses Group *@
         <div class="nav-group">
-            <a href="@Url.Action("Responses", "Dashboard", new { tab = "online" })" class="nav-item @(isResponsesActive ? "active" : "")">
+            <a href="@Url.Action("OnlineResponses", "Dashboard")" class="nav-item @(isResponsesActive ? "active" : "")">
                 <i class="bi bi-archive" style="margin-right:12px;"></i><span>Responses</span>
             </a>
             @if (isResponsesActive) {
                 <div class="sub-nav" style="padding-left: 55px; display: flex; flex-direction: column; gap: 15px; margin: 15px 0 25px 0;">
-                    <a href="@Url.Action("Responses", "Dashboard", new { tab = "walkin" })"
+                    <a href="@Url.Action("WalkInResponses", "Dashboard")"
                        style="text-decoration: none; font-size: 1rem;
                               color: @(isResponsesWalkIn ? "#2a408e" : "#888");
                               font-weight: 700;">
                         Walk In
                     </a>
-                    <a href="@Url.Action("Responses", "Dashboard", new { tab = "online" })"
+                    <a href="@Url.Action("OnlineResponses", "Dashboard")"
                        style="text-decoration: none; font-size: 1rem;
                               color: @(isResponsesOnline ? "#2a408e" : "#888");
                               font-weight: 700;">
@@ -72,6 +72,17 @@
         <a href="@Url.Action("UserList", "Dashboard")" class="nav-item @(currentAction == "UserList" ? "active" : "")">
             <i class="bi bi-person" style="margin-right:12px;"></i><span>User</span>
         </a>
+
+        <div class="sidebar-bottom-actions">
+            <form id="sidebarLogoutForm"
+                  asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-item nav-item-logout">
+                    <i class="bi bi-box-arrow-right" style="margin-right:12px;"></i><span>Logout</span>
+                </button>
+            </form>
+        </div>
 
     </nav>
 </aside>

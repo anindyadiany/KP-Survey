@@ -87,8 +87,9 @@ namespace SurveyApp.Controllers
         [HttpGet]
         public async Task<JsonResult> GetTechniciansByService(int serviceId)
         {
+            _ = serviceId;
             var techs = await _context.Technicians
-                .Where(t => t.service_id == serviceId)
+                .OrderBy(t => t.name)
                 .Select(t => new { t.id, t.name })
                 .ToListAsync();
                 
