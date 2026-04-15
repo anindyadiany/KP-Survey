@@ -29,6 +29,24 @@ public class DashboardController : Controller
         ViewBag.TotalWalkIn = await _context.SurveySubmissions.CountAsync(s => s.survey_types_id == 1);
         ViewBag.ServiceMap = await _context.Services.ToDictionaryAsync(s => s.id, s => s.name);
 
+        // Chart: count submissions per month for current year, split by type
+        var currentYear = DateTime.Now.Year;
+        var allSubmissions = await _context.SurveySubmissions
+            .Where(s => s.submitted_at.Year == currentYear)
+            .ToListAsync();
+
+        var monthlyWalkIn = Enumerable.Range(1, 12)
+            .Select(m => allSubmissions.Count(s => s.survey_types_id == 1 && s.submitted_at.Month == m))
+            .ToList();
+
+        var monthlyOnline = Enumerable.Range(1, 12)
+            .Select(m => allSubmissions.Count(s => s.survey_types_id == 2 && s.submitted_at.Month == m))
+            .ToList();
+
+        ViewBag.MonthlyWalkIn = monthlyWalkIn;
+        ViewBag.MonthlyOnline = monthlyOnline;
+
+        // NPS scores
         var npsScores = await _context.QuestionResponses
             .Where(r => r.technicians_id != null && r.rating_score != null)
             .GroupBy(r => r.technicians_id!.Value)

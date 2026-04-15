@@ -74,20 +74,20 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL'],
+                labels: ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'],
                 datasets: [{
-                    label: 'Tingkat Kepuasan',
+                    label: 'Walk-In Survey',
                     borderColor: '#2a408e',
                     backgroundColor: 'rgba(42, 64, 142, 0.08)',
-                    data: [10, 25, 40, 65, 80, 95, 100],
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthlyWalkIn)),
                     tension: 0.4, fill: true, pointRadius: 5,
                     pointBackgroundColor: '#2a408e',
                     borderWidth: 2.5
                 }, {
-                    label: 'Kepuasan Servis',
+                    label: 'Online Survey',
                     borderColor: '#e74c3c',
                     backgroundColor: 'rgba(231, 76, 60, 0.08)',
-                    data: [55, 15, 35, 55, 40, 15, 40],
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthlyOnline)),
                     tension: 0.4, fill: true, pointRadius: 5,
                     pointBackgroundColor: '#e74c3c',
                     borderWidth: 2.5
@@ -103,7 +103,11 @@
                     }
                 },
                 scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { color: '#888' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#888', stepSize: 1, precision: 0 }, 
+                        grid: { color: 'rgba(0,0,0,0.05)' } 
+                    },
                     x: { ticks: { color: '#888' }, grid: { display: false } }
                 }
             }
