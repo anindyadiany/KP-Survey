@@ -485,6 +485,18 @@ public class DashboardController : Controller
         ViewBag.Feedbacks = feedbacks;
         ViewBag.CategoryColors = categoryColors;
 
+        // Respondents preview (latest 5)
+        var recentSubmissions = await submissionsQuery
+            .OrderByDescending(s => s.submitted_at)
+            .Take(5)
+            .ToListAsync();
+
+        // Total count for "lihat semua" link
+        var totalRespondents = await submissionsQuery.CountAsync();
+
+        ViewBag.RecentSubmissions = recentSubmissions;
+        ViewBag.TotalRespondents = totalRespondents;
+
         return View(viewName);
     }
 
@@ -507,5 +519,25 @@ public class DashboardController : Controller
             TempData["Success"] = "User berhasil dihapus.";
         }
         return RedirectToAction("UserList");
+    }
+
+    public async Task<IActionResult> AllRespondents(string tab = "online", int month = 0, int year = 0)
+    {
+        int surveyTypeId = tab == "walkin" ? 1 : 2;
+
+        var query = _context.SurveySubmissions
+            .Where(s => s.survey_types_id == surveyTypeId);
+
+        if (month > 0) query = query.Where(s => s.submitted_at.Month == month);
+        if (year > 0)  query = query.Where(s => s.submitted_at.Year == year);
+
+        var submissions = await query
+            .OrderByDescending(s => s.submitted_at)
+            .ToListAsync();
+
+        ViewBag.Tab = tab;
+        ViewBag.SelectedMonth = month;
+        ViewBag.SelectedYear = year;
+        return View(submissions);
     }
 }

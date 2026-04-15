@@ -290,6 +290,57 @@
             }
         </script>
 
+        @{
+    var recentSubmissions = ViewBag.RecentSubmissions as List<SurveyApp.Models.SurveySubmission> 
+                            ?? new List<SurveyApp.Models.SurveySubmission>();
+    var totalRespondents = ViewBag.TotalRespondents as int? ?? 0;
+    var currentTab = ViewBag.ActiveTab as string ?? "online";
+    var currentMonth = ViewBag.SelectedMonth as int? ?? 0;
+    var currentYear = ViewBag.SelectedYear as int? ?? 0;
+}
+
+    @if (recentSubmissions.Any())
+    {
+        <div class="dashboard-card" style="margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2 style="font-size:1.2rem; font-weight:800; color:#111; margin:0;">Respondents</h2>
+                <a href="@Url.Action("AllRespondents", "Dashboard", new { tab = currentTab, month = currentMonth, year = currentYear })"
+                style="font-size:0.85rem; color:#2a408e; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:4px;">
+                    Lihat Semua (@totalRespondents) <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="border-bottom:2px solid rgba(0,0,0,0.07); text-align:left; font-size:0.78rem; color:#888; text-transform:uppercase; letter-spacing:0.05em;">
+                        <th style="padding:10px 14px;">Nama</th>
+                        <th style="padding:10px 14px;">Email</th>
+                        <th style="padding:10px 14px;">Fungsi</th>
+                        <th style="padding:10px 14px;">Waktu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in recentSubmissions)
+                    {
+                        var initials = string.IsNullOrEmpty(s.respondent_name) ? "?" : s.respondent_name.Substring(0, 1).ToUpper();
+                        <tr style="border-bottom:1px solid rgba(0,0,0,0.05);">
+                            <td style="padding:12px 14px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#2a408e,#4a60ae); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;">
+                                        @initials
+                                    </div>
+                                    <span style="font-weight:600; color:#111;">@(s.respondent_name ?? "-")</span>
+                                </div>
+                            </td>
+                            <td style="padding:12px 14px; color:#666; font-size:0.9rem;">@(s.respondent_email ?? "-")</td>
+                            <td style="padding:12px 14px; color:#666; font-size:0.9rem;">@(s.respondent_function ?? "-")</td>
+                            <td style="padding:12px 14px; color:#888; font-size:0.85rem;">@s.submitted_at.ToString("dd MMM yyyy, HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+}
+
         <partial name="_NpsTechnicianTable" model="(technicians, npsScores, npsTableTitle)" />
 
         <!-- Feedback Kualitatif -->
