@@ -29,22 +29,39 @@ public class DashboardController : Controller
         ViewBag.TotalWalkIn = await _context.SurveySubmissions.CountAsync(s => s.survey_types_id == 1);
         ViewBag.ServiceMap = await _context.Services.ToDictionaryAsync(s => s.id, s => s.name);
 
-        // Chart: count submissions per month for current year, split by type
+        // Chart: average rating per category per month for current year (online survey only)
         var currentYear = DateTime.Now.Year;
-        var allSubmissions = await _context.SurveySubmissions
-            .Where(s => s.submitted_at.Year == currentYear)
+
+        var allRatingResponses = await _context.QuestionResponses
+            .Where(r => r.rating_score != null)
+            .Join(_context.SurveySubmissions,
+                  r => r.survey_submissions_id,
+                  s => s.id,
+                  (r, s) => new { r.rating_score, r.survey_categories_id, s.submitted_at, s.survey_types_id })
+            .Where(x => x.submitted_at.Year == currentYear && x.survey_types_id == 2)
             .ToListAsync();
 
-        var monthlyWalkIn = Enumerable.Range(1, 12)
-            .Select(m => allSubmissions.Count(s => s.survey_types_id == 1 && s.submitted_at.Month == m))
-            .ToList();
+        // Category 1 = Tingkat Kepuasan, Category 2 = Kualitas Servis
+        var monthlyKepuasan = Enumerable.Range(1, 12).Select(m =>
+        {
+            var vals = allRatingResponses
+                .Where(x => x.submitted_at.Month == m && x.survey_categories_id == 1)
+                .Select(x => (double)x.rating_score!)
+                .ToList();
+            return vals.Any() ? Math.Round(vals.Average(), 2) : 0;
+        }).ToList();
 
-        var monthlyOnline = Enumerable.Range(1, 12)
-            .Select(m => allSubmissions.Count(s => s.survey_types_id == 2 && s.submitted_at.Month == m))
-            .ToList();
+        var monthlyKualitas = Enumerable.Range(1, 12).Select(m =>
+        {
+            var vals = allRatingResponses
+                .Where(x => x.submitted_at.Month == m && x.survey_categories_id == 2)
+                .Select(x => (double)x.rating_score!)
+                .ToList();
+            return vals.Any() ? Math.Round(vals.Average(), 2) : 0;
+        }).ToList();
 
-        ViewBag.MonthlyWalkIn = monthlyWalkIn;
-        ViewBag.MonthlyOnline = monthlyOnline;
+        ViewBag.MonthlyKepuasan = monthlyKepuasan;
+        ViewBag.MonthlyKualitas = monthlyKualitas;
 
         // NPS scores
         var npsScores = await _context.QuestionResponses
